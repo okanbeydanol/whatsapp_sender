@@ -1,0 +1,27 @@
+{
+  "configurations": [
+    {
+      "name": "Debug iOS",
+      "request": "launch",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}",
+      "platform": "ios",
+      "target": "iPhone 11 Pro",
+      "skipFiles": [
+        "node_modules/**",
+      ],
+    },
+    {
+      "name": "Run iOS",
+      "request": "launch",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}",
+      "enableDebug": false,
+      "platform": "ios",
+      "target": "iPhone 11 Pro",
+      "skipFiles": [
+        "node_modules/**",
+      ],
+    }
+  ],
+}

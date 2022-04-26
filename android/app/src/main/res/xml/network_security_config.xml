@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<network-security-config>
+<debug-overrides>
+    <trust-anchors>
+        <!-- Trust user added CAs while debuggable only -->
+        <certificates src="user" />
+        <certificates src="system" />
+    </trust-anchors>
+</debug-overrides>
+
+<!-- let application to use http request -->
+<base-config cleartextTrafficPermitted="true" />
+<domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="true">localhost</domain>
+    <domain includeSubdomains="true">192.168.1.20</domain>
+    <domain includeSubdomains="true">github.test</domain>
+</domain-config>
+</network-security-config>
