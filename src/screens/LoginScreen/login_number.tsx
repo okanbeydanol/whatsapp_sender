@@ -22,11 +22,10 @@ import {getData, storeData} from '../../utils/async-storage';
 import {COUNTRY_CHANGE, getCountryStore} from '../../store/slices/country';
 import countries from '../../assets/countries_details.json';
 import OneSignal from 'react-native-onesignal';
-import {useCheckPhoneQuery} from '../../store/api/pokemonApi';
+import {useLazyCheckPhoneQuery} from '../../store/api/loginApi';
 import {getDeviceInfoStore} from '../../store/slices/deviceInfo';
 
 const LoginScreen = ({navigation}: any) => {
-  const [skip, setSkip] = useState(true);
   const countryStore = useSelector(getCountryStore);
   const deviceInfoStore = useSelector(getDeviceInfoStore);
   const {t, i18n} = useTranslation();
@@ -36,22 +35,9 @@ const LoginScreen = ({navigation}: any) => {
     navigation.navigate('CountriesModal');
   };
   console.log('render');
+  const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
+    useLazyCheckPhoneQuery();
 
-  const {data, isLoading, isSuccess, isError, error} = useCheckPhoneQuery(
-    {
-      digit: digit,
-      areaCode: countryStore.label,
-      countryCode: countryStore.value?.toLocaleLowerCase(),
-      uniqueId: deviceInfoStore?.uniqueId,
-      fingerprint: deviceInfoStore?.fingerprint,
-      latitude: countryStore.latitude,
-      longitude: countryStore.longitude,
-      city_name: countryStore.city_name,
-    },
-    {
-      skip,
-    },
-  );
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
       if (countryStore.label !== null && countryStore.value !== null) {
@@ -61,12 +47,12 @@ const LoginScreen = ({navigation}: any) => {
           countryCode: countryStore.value?.toLocaleLowerCase(),
         });
       }
-      console.log(
-        '%c data.not.freeze_account',
-        'background: #222; color: #bada55',
-        data.not,
-      );
       if (data.not.freeze_account === null || +data.not.freeze_account === 0) {
+        console.log(
+          '%c Your Code Is: ',
+          'background: #222; color: #bada55',
+          data.not.description,
+        );
         navigation.navigate('LoginScreenNumberOtp', {
           digit: digit,
           areaCode: countryStore.label,
@@ -80,9 +66,7 @@ const LoginScreen = ({navigation}: any) => {
           longitude: countryStore.longitude,
           city_name: countryStore.city_name,
         });
-        setSkip(true);
       } else {
-        console.log('%c neden burda', 'background: #222; color: #bada55');
         Alert.alert('Ban', 'Hesabın bnalandı yetkili ile iletişime geç', [
           {text: 'OK', onPress: () => {}},
         ]);
@@ -93,7 +77,16 @@ const LoginScreen = ({navigation}: any) => {
   const onPress = () => {
     if (digit.length > 7) {
       setTimeout(() => {
-        setSkip(false);
+        trigger({
+          digit: digit,
+          areaCode: countryStore.label,
+          countryCode: countryStore.value?.toLocaleLowerCase(),
+          uniqueId: deviceInfoStore?.uniqueId,
+          fingerprint: deviceInfoStore?.fingerprint,
+          latitude: countryStore.latitude,
+          longitude: countryStore.longitude,
+          city_name: countryStore.city_name,
+        });
       }, 100);
     } else {
       Alert.alert('Boş Bırakma', 'Doldur', [{text: 'OK', onPress: () => {}}]);
@@ -101,9 +94,8 @@ const LoginScreen = ({navigation}: any) => {
   };
   useEffect(() => {
     if (isError) {
-      Alert.alert('Hata Var', 'OTP GONDERILEMIYOR', [
-        {text: 'OK', onPress: () => {}},
-      ]);
+      console.log('%c error', 'background: #222; color: #bada55', error);
+      Alert.alert('Hata Var', '', [{text: 'OK', onPress: () => {}}]);
     }
   }, [isError]);
 

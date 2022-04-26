@@ -14,10 +14,12 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
-import {useLoginOrCreateQuery} from '../../store/api/pokemonApi';
+import {useLazyLoginOrCreateQuery} from '../../store/api/loginApi';
 
 const LoginScreenNumberOtp = ({route, navigation}: any) => {
-  const [skip, setSkip] = useState(true);
+  const dispatch = useDispatch();
+  const {t, i18n} = useTranslation();
+  const selectedLanguageCode = i18n.language;
   const {
     digit,
     areaCode,
@@ -31,21 +33,9 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
     longitude,
     city_name,
   } = route.params;
-  const {data, isLoading, isSuccess, isError, error} = useLoginOrCreateQuery(
-    {
-      digit: digit,
-      areaCode: areaCode,
-      countryCode: countryCode.toLocaleLowerCase(),
-      uniqueId: uniqueId,
-      fingerprint: fingerprint,
-      latitude: latitude,
-      longitude: longitude,
-      city_name: city_name,
-    },
-    {
-      skip,
-    },
-  );
+  const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
+    useLazyLoginOrCreateQuery();
+
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
       if (userGuid !== null && fullname !== null) {
@@ -80,9 +70,6 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
       ]);
     }
   }, [isError]);
-  const dispatch = useDispatch();
-  const {t, i18n} = useTranslation();
-  const selectedLanguageCode = i18n.language;
 
   const complete = () => {
     let errorResult = false;
@@ -97,7 +84,16 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
         {text: 'OK', onPress: () => setValue('')},
       ]);
     } else {
-      setSkip(false);
+      trigger({
+        digit: digit,
+        areaCode: areaCode,
+        countryCode: countryCode.toLocaleLowerCase(),
+        uniqueId: uniqueId,
+        fingerprint: fingerprint,
+        latitude: latitude,
+        longitude: longitude,
+        city_name: city_name,
+      });
     }
   };
   // const changeLanguage = value => {

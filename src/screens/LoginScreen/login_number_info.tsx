@@ -16,24 +16,19 @@ import AppHeader from '../../components/Header/AppHeader';
 import AppButton from '../../components/Elements/AppButton';
 import AppTextInput from '../../components/Elements/AppTextInput';
 import {LoginType, LOGIN_SUCCESS} from '../../store/slices/login';
-import {useUpdateUserNameQuery} from '../../store/api/pokemonApi';
+import {useLazyUpdateUserNameQuery} from '../../store/api/loginApi';
 
 const LoginScreenNumberInfo = ({route, navigation}: any) => {
+  const {t, i18n} = useTranslation();
+  const selectedLanguageCode = i18n.language;
+  const dispatch = useDispatch();
   const {userGuid} = route.params;
   const fullnameRef: any = useRef<TextInput>(null);
-  const [skip, setSkip] = useState(true);
-  const {data, isLoading, isSuccess, isError, error} = useUpdateUserNameQuery(
-    {
-      user_guid: userGuid,
-      fullname: fullnameRef?.current?.value,
-    },
-    {
-      skip,
-    },
-  );
+
+  const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
+    useLazyUpdateUserNameQuery();
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
-      setSkip(true);
       dispatch(
         LOGIN_SUCCESS({
           type: LoginType.LOGIN_SUCCESS,
@@ -45,22 +40,22 @@ const LoginScreenNumberInfo = ({route, navigation}: any) => {
   }, [data, isSuccess]);
   useEffect(() => {
     if (isError) {
-      setSkip(true);
       Alert.alert('Hata Var', 'OTP GONDERILEMIYOR', [
         {text: 'OK', onPress: () => {}},
       ]);
     }
   }, [isError]);
-  const {t, i18n} = useTranslation();
-  const selectedLanguageCode = i18n.language;
-  const dispatch = useDispatch();
+
   const onPress = async () => {
     if (
       fullnameRef.current &&
       fullnameRef.current.value &&
       fullnameRef.current.value.length > 5
     ) {
-      setSkip(false);
+      trigger({
+        user_guid: userGuid,
+        fullname: fullnameRef?.current?.value,
+      });
     }
   };
   return (

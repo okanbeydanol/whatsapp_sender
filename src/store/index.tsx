@@ -6,7 +6,7 @@ import socketBrainSliceReducer from './slices/socket/socket-brain';
 import keyboardEventsSliceReducer from './slices/keyboard';
 import countrySliceReducer from './slices/country';
 import deviceInfoSliceReducer from './slices/deviceInfo';
-import {pokemonApi} from './api/pokemonApi';
+import {loginApi} from './api/loginApi';
 
 const store = configureStore({
   reducer: {
@@ -16,13 +16,13 @@ const store = configureStore({
     deviceinfo: deviceInfoSliceReducer,
     socket: socketSliceReducer,
     socketBrain: socketBrainSliceReducer,
-    [pokemonApi.reducerPath]: pokemonApi.reducer,
+    [loginApi.reducerPath]: loginApi.reducer,
   },
 
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(pokemonApi.middleware),
+    }).concat(loginApi.middleware),
 });
 
 export default store;
