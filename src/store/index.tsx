@@ -6,6 +6,7 @@ import socketBrainSliceReducer from './slices/socket/socket-brain';
 import keyboardEventsSliceReducer from './slices/keyboard';
 import countrySliceReducer from './slices/country';
 import deviceInfoSliceReducer from './slices/deviceInfo';
+import permissionsSliceReducer from './slices/permissions';
 import {loginApi} from './api/loginApi';
 
 const store = configureStore({
@@ -14,6 +15,7 @@ const store = configureStore({
     keyboardevents: keyboardEventsSliceReducer,
     country: countrySliceReducer,
     deviceinfo: deviceInfoSliceReducer,
+    permissions: permissionsSliceReducer,
     socket: socketSliceReducer,
     socketBrain: socketBrainSliceReducer,
     [loginApi.reducerPath]: loginApi.reducer,

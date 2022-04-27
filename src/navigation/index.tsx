@@ -24,11 +24,14 @@ import ChatScreen from '../screens/SingleScreen/Chat';
 // SettingsScreen Screens
 import SettingsScreen from '../screens/SettingsScreen';
 
+// PermissionScreen Screens
+import PermissionScreen from '../screens/PermissionScreen';
+
 // Loading Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
 import {RESTORE_GUID, LoginType, getLoginStore} from '../store/slices/login';
-import {getData, removeData, storeData} from '../utils/async-storage';
+import {getData, storeData} from '../utils/async-storage';
 // import Sidebar from '../components/Sidebar';
 import GroupActive from '../assets/images/tabs/group-active.svg';
 import Group from '../assets/images/tabs/group.svg';
@@ -44,7 +47,6 @@ import {
 } from 'react-native';
 import {KEYBOARD_EVENT_CHANGE} from '../store/slices/keyboard';
 import {badge} from '../constants/styles/colors';
-import {listen_slice_user_retrive_badge} from '../store/slices/socket/socket-brain';
 import LoginCountryScreen from '../screens/LoginScreen/LoginCountryScreen';
 import OneSignal from 'react-native-onesignal';
 import {
@@ -53,6 +55,14 @@ import {
   getUniqueId,
 } from 'react-native-device-info';
 import {DEVICEINFO_CHANGE} from '../store/slices/deviceInfo';
+import {
+  getPermissionsStore,
+  PERMISSIONS_CHANGE,
+} from '../store/slices/permissions';
+import {
+  canDisplayOverOtherApps,
+  isAccessibilityOn,
+} from 'react-native-accessibility-manager-plugin';
 OneSignal.setLogLevel(6, 0);
 OneSignal.setAppId('d0cc3e49-cceb-43f7-9f1e-de797979fcc1');
 export default function Navigation() {
@@ -95,7 +105,7 @@ export default function Navigation() {
         fingerprint: fingerprint,
         androidId: androidId,
       });
-      const deviceInfo = getData('[deviceInfo]');
+      const deviceInfo = await getData('[deviceInfo]');
       if (deviceInfo === null) {
         storeData('[deviceInfo]', {
           uniqueId: uniqueId,
@@ -103,7 +113,13 @@ export default function Navigation() {
           androidId: androidId,
         });
       }
-      batch(() => {
+      const accessibility = await isAccessibilityOn();
+      const displayOverOtherApps = await canDisplayOverOtherApps();
+      storeData('[permissions]', {
+        accessibility: accessibility,
+        displayOverOtherApps: displayOverOtherApps,
+      });
+      batch(async () => {
         dispatch(
           DEVICEINFO_CHANGE({
             uniqueId: uniqueId,
@@ -116,6 +132,12 @@ export default function Navigation() {
             type: LoginType.RESTORE_GUID,
             userGuid: userGuid,
             loading: true,
+          }),
+        );
+        dispatch(
+          PERMISSIONS_CHANGE({
+            accessibility: accessibility,
+            displayOverOtherApps: displayOverOtherApps,
           }),
         );
       });
@@ -189,13 +211,13 @@ const LoadingStack = createNativeStackNavigator();
 // const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
 const RootNavigator = () => {
+  const permissions = useSelector(getPermissionsStore);
   // const {navigate} = useNavigation();
   const loginStore = useSelector(getLoginStore);
   useEffect(() => {
     if (loginStore.type === LoginType.LOGIN_SUCCESS) {
       setTimeout(async () => {
         storeData('s[userGuid]', loginStore.userGuid);
-        removeData('s[userGuid]');
       }, 10);
     }
   }, [loginStore.type]);
@@ -205,11 +227,20 @@ const RootNavigator = () => {
         headerShown: false,
       }}>
       {loginStore.type === LoginType.LOGIN_SUCCESS ? (
-        <Stack.Group>
-          <Stack.Screen name="Root" component={TabNavigator} />
-          <Stack.Screen name="ChatScreen" component={ChatScreen} />
-          <Stack.Screen name="NewChatScreen" component={NewChatScreen} />
-        </Stack.Group>
+        permissions.accessibility && permissions.displayOverOtherApps ? (
+          <Stack.Group>
+            <Stack.Screen name="Root" component={TabNavigator} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+            <Stack.Screen name="NewChatScreen" component={NewChatScreen} />
+          </Stack.Group>
+        ) : (
+          <Stack.Group>
+            <Stack.Screen
+              name="PermissionScreen"
+              component={PermissionScreen}
+            />
+          </Stack.Group>
+        )
       ) : loginStore.type === LoginType.LOGIN_FAILED ? (
         <Stack.Group>
           <Stack.Screen
@@ -240,7 +271,6 @@ const RootNavigator = () => {
 };
 
 const TabNavigator = () => {
-  const retriveBadge = useSelector(listen_slice_user_retrive_badge);
   return (
     <Tab.Navigator
       initialRouteName="Single"
@@ -267,7 +297,7 @@ const TabNavigator = () => {
           left: -28,
           fontFamily: 'Montserrat-SemiBold',
           fontSize: 11,
-          opacity: retriveBadge?.totalUnreadMessageCount === 0 ? 0 : 1,
+          opacity: 1,
         },
       })}>
       <Tab.Screen name="Group" component={GroupStackNavigator} />
@@ -275,7 +305,7 @@ const TabNavigator = () => {
         name="Single"
         component={SingleStackNavigator}
         options={{
-          tabBarBadge: retriveBadge?.totalUnreadMessageCount,
+          tabBarBadge: 1,
         }}
       />
       <Tab.Screen name="Settings" component={SettingsStackNavigator} />
