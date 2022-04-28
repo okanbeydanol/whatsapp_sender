@@ -25,10 +25,15 @@ export const countrySlice = createSlice({
     COUNTRY_CHANGE: (state, action) => {
       return action.payload;
     },
+    COUNTRY_CHANGE_UPDATE: (state, action) => {
+      state.value = action.payload.value;
+      state.label = action.payload.label;
+      state.country_name = action.payload.country_name;
+    },
   },
 });
 
-export const {COUNTRY_CHANGE} = countrySlice.actions;
+export const {COUNTRY_CHANGE, COUNTRY_CHANGE_UPDATE} = countrySlice.actions;
 
 export const getCountryStore = (state: {country: CountryResult}) =>
   state.country;

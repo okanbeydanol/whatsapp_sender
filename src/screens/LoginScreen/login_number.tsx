@@ -77,6 +77,16 @@ const LoginScreen = ({navigation}: any) => {
   const onPress = () => {
     if (digit.length > 7) {
       setTimeout(() => {
+        console.log('%c negidiyor', 'background: #222; color: #bada55', {
+          digit: digit,
+          areaCode: countryStore.label,
+          countryCode: countryStore.value?.toLocaleLowerCase(),
+          uniqueId: deviceInfoStore?.uniqueId,
+          fingerprint: deviceInfoStore?.fingerprint,
+          latitude: countryStore.latitude,
+          longitude: countryStore.longitude,
+          city_name: countryStore.city_name,
+        });
         trigger({
           digit: digit,
           areaCode: countryStore.label,

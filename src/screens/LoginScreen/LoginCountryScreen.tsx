@@ -16,7 +16,7 @@ import {medium, primary, secondary} from '../../constants/styles/colors';
 import AppFlag from '../../components/Elements/AppFlag';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {batch, useDispatch} from 'react-redux';
-import {COUNTRY_CHANGE} from '../../store/slices/country';
+import {COUNTRY_CHANGE_UPDATE} from '../../store/slices/country';
 
 const LoginCountryScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
@@ -80,7 +80,7 @@ const LoginCountryScreen = ({navigation}: any) => {
                 activeOpacity={0.7}
                 onPress={() => {
                   navigation.pop();
-                  dispatch(COUNTRY_CHANGE(key));
+                  dispatch(COUNTRY_CHANGE_UPDATE(key));
                 }}>
                 <ListItem>
                   <AppFlag style={styles.avatar} value={key.value} />

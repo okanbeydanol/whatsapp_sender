@@ -3,7 +3,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Alert, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {useDispatch} from 'react-redux';
+import {batch, useDispatch} from 'react-redux';
 import {medium, primary, tertiary} from '../../constants/styles/colors';
 import AppHeader from '../../components/Header/AppHeader';
 import AppButton from '../../components/Elements/AppButton';
@@ -15,6 +15,7 @@ import {
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import {useLazyLoginOrCreateQuery} from '../../store/api/loginApi';
+import {USER_CHANGE} from '../../store/slices/user';
 
 const LoginScreenNumberOtp = ({route, navigation}: any) => {
   const dispatch = useDispatch();
@@ -38,11 +39,9 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
 
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
+      console.log('%c data', 'background: #222; color: #bada55', data);
       if (userGuid !== null && fullname !== null) {
-        if (
-          data.user.freeze_account === null ||
-          +data.user.freeze_account === 0
-        ) {
+        if (data.freeze_account === null || +data.freeze_account === 0) {
           dispatch(
             LOGIN_SUCCESS({
               type: LoginType.LOGIN_SUCCESS,
@@ -58,12 +57,13 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
       } else {
         navigation.popToTop();
         navigation.navigate('LoginScreenNumberInfo', {
-          userGuid: data.user.user_guid,
+          userGuid: data.user_guid,
         });
       }
     }
   }, [data, isSuccess]);
   useEffect(() => {
+    console.log('%c error', 'background: #222; color: #bada55', error);
     if (isError) {
       Alert.alert('Hata Var', 'OTP GONDERILEMIYOR', [
         {text: 'OK', onPress: () => {}},
@@ -85,6 +85,16 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
       ]);
     } else {
       trigger({
+        digit: digit,
+        areaCode: areaCode,
+        countryCode: countryCode.toLocaleLowerCase(),
+        uniqueId: uniqueId,
+        fingerprint: fingerprint,
+        latitude: latitude,
+        longitude: longitude,
+        city_name: city_name,
+      });
+      console.log('%c triggerladı', 'background: #222; color: #bada55', {
         digit: digit,
         areaCode: areaCode,
         countryCode: countryCode.toLocaleLowerCase(),

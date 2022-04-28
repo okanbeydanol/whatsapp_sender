@@ -18,8 +18,6 @@ import GroupScreen from '../screens/GroupScreen';
 
 // SingleScreen Screens
 import SingleScreen from '../screens/SingleScreen';
-import NewChatScreen from '../screens/SingleScreen/newChat';
-import ChatScreen from '../screens/SingleScreen/Chat';
 
 // SettingsScreen Screens
 import SettingsScreen from '../screens/SettingsScreen';
@@ -30,7 +28,12 @@ import PermissionScreen from '../screens/PermissionScreen';
 // Loading Screens
 import LoadingScreen from '../screens/LoadingScreen';
 
-import {RESTORE_GUID, LoginType, getLoginStore} from '../store/slices/login';
+import {
+  LoginType,
+  getLoginStore,
+  LOGIN_FAILED,
+  LOGIN_SUCCESS,
+} from '../store/slices/login';
 import {getData, storeData} from '../utils/async-storage';
 // import Sidebar from '../components/Sidebar';
 import GroupActive from '../assets/images/tabs/group-active.svg';
@@ -82,21 +85,6 @@ export default function Navigation() {
     };
     setTimeout(async () => {
       const userGuid = await getUserGuid();
-      console.log(
-        '%c getUniqueId()',
-        'background: #222; color: #bada55',
-        getUniqueId(),
-      );
-      console.log(
-        '%c   getFingerprint()',
-        'background: #222; color: #bada55',
-        await getFingerprint(),
-      );
-      console.log(
-        '%c  getAndroidId()',
-        'background: #222; color: #bada55',
-        await getAndroidId(),
-      );
       const fingerprint = await getFingerprint();
       const androidId = await getAndroidId();
       const uniqueId = await getUniqueId();
@@ -127,13 +115,23 @@ export default function Navigation() {
             androidId: androidId,
           }),
         );
-        dispatch(
-          RESTORE_GUID({
-            type: LoginType.RESTORE_GUID,
-            userGuid: userGuid,
-            loading: true,
-          }),
-        );
+        if (userGuid === null) {
+          dispatch(
+            LOGIN_FAILED({
+              type: LoginType.LOGIN_FAILED,
+              userGuid: userGuid,
+              loading: true,
+            }),
+          );
+        } else {
+          dispatch(
+            LOGIN_SUCCESS({
+              type: LoginType.LOGIN_SUCCESS,
+              userGuid: userGuid,
+              loading: true,
+            }),
+          );
+        }
         dispatch(
           PERMISSIONS_CHANGE({
             accessibility: accessibility,
@@ -230,8 +228,6 @@ const RootNavigator = () => {
         permissions.accessibility && permissions.displayOverOtherApps ? (
           <Stack.Group>
             <Stack.Screen name="Root" component={TabNavigator} />
-            <Stack.Screen name="ChatScreen" component={ChatScreen} />
-            <Stack.Screen name="NewChatScreen" component={NewChatScreen} />
           </Stack.Group>
         ) : (
           <Stack.Group>

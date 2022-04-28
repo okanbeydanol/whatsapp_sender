@@ -1,30 +1,33 @@
-import {configureStore} from '@reduxjs/toolkit';
+import {configureStore, ConfigureStoreOptions} from '@reduxjs/toolkit';
 
 import dbLoginSliceReducer from './slices/login';
-import socketSliceReducer from './slices/socket/socket';
-import socketBrainSliceReducer from './slices/socket/socket-brain';
 import keyboardEventsSliceReducer from './slices/keyboard';
 import countrySliceReducer from './slices/country';
+import contactsSliceReducer from './slices/contacts';
 import deviceInfoSliceReducer from './slices/deviceInfo';
+import userSliceReducer from './slices/user';
 import permissionsSliceReducer from './slices/permissions';
 import {loginApi} from './api/loginApi';
+import {userApi} from './api/userApi';
 
-const store = configureStore({
-  reducer: {
-    login: dbLoginSliceReducer,
-    keyboardevents: keyboardEventsSliceReducer,
-    country: countrySliceReducer,
-    deviceinfo: deviceInfoSliceReducer,
-    permissions: permissionsSliceReducer,
-    socket: socketSliceReducer,
-    socketBrain: socketBrainSliceReducer,
-    [loginApi.reducerPath]: loginApi.reducer,
-  },
+export const createStore = (
+  options?: ConfigureStoreOptions['preloadedState'] | undefined,
+) =>
+  configureStore({
+    reducer: {
+      login: dbLoginSliceReducer,
+      keyboardevents: keyboardEventsSliceReducer,
+      country: countrySliceReducer,
+      contacts: contactsSliceReducer,
+      deviceinfo: deviceInfoSliceReducer,
+      user: userSliceReducer,
+      permissions: permissionsSliceReducer,
+      [loginApi.reducerPath]: loginApi.reducer,
+      [userApi.reducerPath]: userApi.reducer,
+    },
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware().concat(loginApi.middleware, userApi.middleware),
+    ...options,
+  });
 
-  middleware: getDefaultMiddleware =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-    }).concat(loginApi.middleware),
-});
-
-export default store;
+export const store = createStore();

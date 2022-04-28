@@ -29,23 +29,13 @@ export const dbLoginSlice = createSlice({
       return action.payload;
     },
     LOGOUT: (state, action) => {
+      action.payload.type = LoginType.LOGIN_FAILED;
       return action.payload;
-    },
-    RESTORE_GUID: (state, action) => {
-      if (action.payload.userGuid === null) {
-        state.type = LoginType.LOGIN_FAILED;
-        state.userGuid = '';
-      } else {
-        state.type = LoginType.LOGIN_SUCCESS;
-        state.userGuid = action.payload.userGuid;
-      }
-      state.loading = false;
     },
   },
 });
 
-export const {LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT, RESTORE_GUID} =
-  dbLoginSlice.actions;
+export const {LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT} = dbLoginSlice.actions;
 
 export const getLoginStore = (state: {login: LoginResult}) => state.login;
 

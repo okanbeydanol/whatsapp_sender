@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {useDispatch} from 'react-redux';
+import {batch, useDispatch} from 'react-redux';
 import {primary} from '../../constants/styles/colors';
 import AppHeader from '../../components/Header/AppHeader';
 import AppButton from '../../components/Elements/AppButton';
