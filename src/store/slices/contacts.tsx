@@ -1,14 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit';
+import {ContactResponse} from '../../utils/native-contact';
 
-export type ContactsResult = {
-  name: string | null;
-  lastName: string | null;
-  fullName: string | null;
-  contacts: [] | null;
-  userGuid: string | null;
-};
-
-const initialState: ContactsResult[] = [];
+const initialState: ContactResponse[] = [];
 
 export const contactsSlice = createSlice({
   name: 'contacts',
@@ -22,7 +15,7 @@ export const contactsSlice = createSlice({
 
 export const {CONTACTS_CHANGE} = contactsSlice.actions;
 
-export const getContactsStore = (state: {contacts: ContactsResult[]}) =>
+export const getContactsStore = (state: {contacts: ContactResponse[]}) =>
   state.contacts;
 
 export default contactsSlice.reducer;

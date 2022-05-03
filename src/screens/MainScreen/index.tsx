@@ -8,7 +8,7 @@ import {getUserStore, USER_CHANGE} from '../../store/slices/user';
 import moment from 'moment';
 import {useGetUserQuery} from '../../store/api/userApi';
 import usePacket from '../../hooks/usePacket';
-const SingleScreen = ({navigation}: any) => {
+const MainScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
   const loginStore = useSelector(getLoginStore);
   const usePacketHook = usePacket();
@@ -22,6 +22,7 @@ const SingleScreen = ({navigation}: any) => {
       dispatch(USER_CHANGE(data));
     }
   }, [isSuccess]);
+
   useEffect(() => {
     console.log('%c error', 'background: #222; color: #bada55', error);
     if (isError) {
@@ -30,6 +31,7 @@ const SingleScreen = ({navigation}: any) => {
       ]);
     }
   }, [isError]);
+
   useEffect(() => {
     if (userStore.user_guid !== null) {
       const date = moment(userStore.packet_end_time);
@@ -49,26 +51,7 @@ const SingleScreen = ({navigation}: any) => {
       .fill('')
       .map((_, i) => ({key: `${i}`, text: `item #${i}`})),
   );
-  return (
-    <>
-      <SwipeListView
-        data={state}
-        renderItem={(data: any, rowMap: any) => (
-          <View>
-            <Text>I am {data.item.text} in a SwipeListView</Text>
-          </View>
-        )}
-        renderHiddenItem={(data, rowMap) => (
-          <View>
-            <Text>Left</Text>
-            <Text>Right</Text>
-          </View>
-        )}
-        leftOpenValue={75}
-        rightOpenValue={-75}
-      />
-    </>
-  );
+  return <></>;
 };
 
-export default SingleScreen;
+export default MainScreen;

@@ -4,6 +4,7 @@ import dbLoginSliceReducer from './slices/login';
 import keyboardEventsSliceReducer from './slices/keyboard';
 import countrySliceReducer from './slices/country';
 import contactsSliceReducer from './slices/contacts';
+import dbContactsSliceReducer from './slices/dbContacts';
 import deviceInfoSliceReducer from './slices/deviceInfo';
 import userSliceReducer from './slices/user';
 import permissionsSliceReducer from './slices/permissions';
@@ -19,6 +20,7 @@ export const createStore = (
       keyboardevents: keyboardEventsSliceReducer,
       country: countrySliceReducer,
       contacts: contactsSliceReducer,
+      dbContacts: dbContactsSliceReducer,
       deviceinfo: deviceInfoSliceReducer,
       user: userSliceReducer,
       permissions: permissionsSliceReducer,

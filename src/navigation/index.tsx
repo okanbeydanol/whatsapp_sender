@@ -13,11 +13,13 @@ import LoginScreenNumber from '../screens/LoginScreen/login_number';
 import LoginScreenNumberOtp from '../screens/LoginScreen/login_number_otp';
 import LoginScreenNumberInfo from '../screens/LoginScreen/login_number_info';
 
-// GroupScreen Screens
-import GroupScreen from '../screens/GroupScreen';
+// ContactScreen Screens
+import ContactScreen from '../screens/ContactScreen';
+import ChooseContact from '../screens/ContactScreen/ChooseContact';
+import CreateList from '../screens/ContactScreen/CreateList';
 
-// SingleScreen Screens
-import SingleScreen from '../screens/SingleScreen';
+// MainScreen Screens
+import MainScreen from '../screens/MainScreen';
 
 // SettingsScreen Screens
 import SettingsScreen from '../screens/SettingsScreen';
@@ -313,9 +315,19 @@ function GroupStackNavigator() {
   return (
     <GroupStack.Navigator screenOptions={{headerShown: false}}>
       <GroupStack.Screen
-        options={{animation: 'fade'}}
-        name="GroupScreen"
-        component={GroupScreen}
+        options={{animation: 'slide_from_right'}}
+        name="ContactScreen"
+        component={ContactScreen}
+      />
+      <GroupStack.Screen
+        options={{animation: 'slide_from_right'}}
+        name="ChooseContact"
+        component={ChooseContact}
+      />
+      <GroupStack.Screen
+        options={{animation: 'slide_from_right'}}
+        name="CreateList"
+        component={CreateList}
       />
     </GroupStack.Navigator>
   );
@@ -324,7 +336,7 @@ function GroupStackNavigator() {
 function SingleStackNavigator() {
   return (
     <SingleStack.Navigator screenOptions={{headerShown: false}}>
-      <SingleStack.Screen name="SingleScreen" component={SingleScreen} />
+      <SingleStack.Screen name="MainScreen" component={MainScreen} />
     </SingleStack.Navigator>
   );
 }

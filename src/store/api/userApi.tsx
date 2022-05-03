@@ -1,12 +1,13 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {BASE_API_URL} from '../../constants';
 import {USER} from '../../constants/typescript/user';
+import {DatabaseContactResponse} from '../../utils/native-contact';
 
 export const userApi = createApi({
   reducerPath: 'userApi',
-  baseQuery: fetchBaseQuery({baseUrl: 'http://192.168.1.20:8000/api/'}),
+  baseQuery: fetchBaseQuery({baseUrl: BASE_API_URL}),
   endpoints: build => ({
     getUser: build.query<USER, any>({
-      // note: an optional `queryFn` may be used in place of `query`
       query: ({...patch}) => ({
         url: 'get_user_info',
         method: 'POST',
@@ -14,9 +15,22 @@ export const userApi = createApi({
       }),
     }),
     checkUserPacket: build.query<USER, any>({
-      // note: an optional `queryFn` may be used in place of `query`
       query: ({...patch}) => ({
         url: 'check_user_packet',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    getUserContacts: build.query<DatabaseContactResponse[], any>({
+      query: ({...patch}) => ({
+        url: 'user_contacts_fetch',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    updateUserContacts: build.query<DatabaseContactResponse[], any>({
+      query: ({...patch}) => ({
+        url: 'user_contacts_update',
         method: 'POST',
         body: patch,
       }),
@@ -24,4 +38,9 @@ export const userApi = createApi({
   }),
 });
 
-export const {useGetUserQuery, useLazyCheckUserPacketQuery} = userApi;
+export const {
+  useGetUserQuery,
+  useLazyCheckUserPacketQuery,
+  useLazyGetUserContactsQuery,
+  useLazyUpdateUserContactsQuery,
+} = userApi;

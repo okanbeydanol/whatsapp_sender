@@ -1,25 +1,21 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {BASE_API_URL} from '../../constants';
 
 export const loginApi = createApi({
   reducerPath: 'loginApi',
-  baseQuery: fetchBaseQuery({baseUrl: 'http://192.168.1.20:8000/api/'}),
-  tagTypes: ['PHONE_CHECK'],
-  keepUnusedDataFor: 10,
+  baseQuery: fetchBaseQuery({baseUrl: BASE_API_URL}),
   endpoints: build => ({
     getCountries: build.query<any, void>({
       query: () => 'countries',
     }),
     checkPhone: build.query<any, any>({
-      // note: an optional `queryFn` may be used in place of `query`
       query: ({...patch}) => ({
         url: 'check_phone_number',
         method: 'POST',
         body: patch,
       }),
-      providesTags: ['PHONE_CHECK'],
     }),
     loginOrCreate: build.query<any, any>({
-      // note: an optional `queryFn` may be used in place of `query`
       query: ({...patch}) => ({
         url: 'login_or_register',
         method: 'POST',
@@ -27,7 +23,6 @@ export const loginApi = createApi({
       }),
     }),
     updateUserName: build.query<any, any>({
-      // note: an optional `queryFn` may be used in place of `query`
       query: ({...patch}) => ({
         url: 'update_user_name',
         method: 'POST',

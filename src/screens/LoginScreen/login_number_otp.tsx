@@ -36,7 +36,7 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
   } = route.params;
   const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
     useLazyLoginOrCreateQuery();
-
+  console.log('%c error', 'background: #222; color: #bada55', error);
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
       console.log('%c data', 'background: #222; color: #bada55', data);

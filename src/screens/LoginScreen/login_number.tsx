@@ -102,6 +102,7 @@ const LoginScreen = ({navigation}: any) => {
       Alert.alert('Boş Bırakma', 'Doldur', [{text: 'OK', onPress: () => {}}]);
     }
   };
+
   useEffect(() => {
     if (isError) {
       console.log('%c error', 'background: #222; color: #bada55', error);
@@ -110,6 +111,7 @@ const LoginScreen = ({navigation}: any) => {
   }, [isError]);
 
   const dispatch = useDispatch();
+
   useEffect(() => {
     if (countryStore && countryStore.value === null) {
       setTimeout(async () => {

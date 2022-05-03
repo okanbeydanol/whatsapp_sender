@@ -4,6 +4,7 @@ import Contacts, {
   PostalAddress,
 } from 'react-native-contacts';
 import countries from '../assets/countries_details.json';
+import uuid from 'react-native-uuid';
 
 export const organizeContact = (
   userGuid: string,
@@ -19,15 +20,17 @@ export const organizeContact = (
             (lastPromise, contact) =>
               lastPromise.then(async () => {
                 const data: ContactResponse = {
+                  recordID: 0,
                   userGuid,
                   name: null,
                   lastName: null,
                   fullName: null,
                   contacts: [],
                 };
-                data.fullName = contact.givenName + contact.familyName;
+                data.fullName = contact.givenName + ' ' + contact.familyName;
                 data.lastName = contact.familyName;
                 data.name = contact.givenName;
+                data.recordID = +contact.recordID;
                 if (
                   contact.postalAddresses &&
                   contact.postalAddresses.length > 0 &&
@@ -94,23 +97,27 @@ const getAvailableNumberWithAddress = async (
   addresses: PostalAddress[],
 ): Promise<any> => {
   return new Promise(async resolve => {
-    const numbers: {digit: any; countryCode: null; areaCode: null}[] = [];
+    const numbers: ContactPhonesResponse[] = [];
     const numberPattern = /\d+/g;
     if (phoneNumbers && phoneNumbers.length > 0) {
       await phoneNumbers
         .reduce(
-          (lastPromise, phone) =>
+          (lastPromise, phone: PhoneNumber) =>
             lastPromise.then(async () => {
               if (phone.number.match(numberPattern) !== null) {
-                const cleanPhone: any = {
-                  digit: phone.number.match(numberPattern)?.join(''),
-                  countryCode: null,
+                const cleanPhone: ContactPhonesResponse = {
+                  id: +phone.id,
+                  contact_phone_guid: uuid.v4().toString(),
+                  digit:
+                    phone.number.match(numberPattern)?.join('').toString() ||
+                    '',
                   areaCode: null,
+                  countryCode: null,
                   type: null,
                 };
                 await addresses
                   .reduce(
-                    (lastPromiseAddresses, address) =>
+                    (lastPromiseAddresses, address: PostalAddress) =>
                       lastPromiseAddresses.then(async () => {
                         if (address.region) {
                           const findCountry = countries.find(
@@ -218,11 +225,12 @@ const getAvailableNumberWithAddress = async (
     }
   });
 };
+
 const getAvailableNumber = async (
   phoneNumbers: PhoneNumber[],
 ): Promise<any> => {
   return new Promise(async resolve => {
-    const numbers: any = [];
+    const numbers: ContactPhonesResponse[] = [];
     const numberPattern = /\d+/g;
     if (phoneNumbers && phoneNumbers.length > 0) {
       await phoneNumbers
@@ -230,10 +238,14 @@ const getAvailableNumber = async (
           (lastPromise, phone) =>
             lastPromise.then(async () => {
               if (phone.number.match(numberPattern) !== null) {
-                const cleanPhone: any = {
-                  digit: phone.number.match(numberPattern)?.join(''),
-                  countryCode: null,
+                const cleanPhone: ContactPhonesResponse = {
+                  id: +phone.id,
+                  contact_phone_guid: uuid.v4().toString(),
+                  digit:
+                    phone.number.match(numberPattern)?.join('').toString() ||
+                    '',
                   areaCode: null,
+                  countryCode: null,
                   type: null,
                 };
 
@@ -241,16 +253,27 @@ const getAvailableNumber = async (
                   cleanPhone.digit?.startsWith(o.label.split('+')[1]),
                 );
                 if (findCountryWithNumber) {
-                  cleanPhone.digit = cleanPhone.digit
+                  const exampleLength = findCountryWithNumber.number_example
+                    .match(numberPattern)
+                    ?.join('').length;
+                  const numberLength = cleanPhone.digit
                     .toString()
                     .slice(
                       +findCountryWithNumber.label.split('+')[1].length,
                       +cleanPhone.digit.length,
-                    );
-                  cleanPhone.countryCode =
-                    findCountryWithNumber.value.toLocaleLowerCase();
-                  cleanPhone.areaCode =
-                    findCountryWithNumber.label.split('+')[1];
+                    ).length;
+                  if (Math.abs((exampleLength || 0) - numberLength) < 2) {
+                    cleanPhone.digit = cleanPhone.digit
+                      .toString()
+                      .slice(
+                        +findCountryWithNumber.label.split('+')[1].length,
+                        +cleanPhone.digit.length,
+                      );
+                    cleanPhone.countryCode =
+                      findCountryWithNumber.value.toLocaleLowerCase();
+                    cleanPhone.areaCode =
+                      findCountryWithNumber.label.split('+')[1];
+                  }
                 }
 
                 cleanPhone.type = 'available';
@@ -268,13 +291,14 @@ const getAvailableNumber = async (
     }
   });
 };
+
 const getAvailableNumberDeepScan = async (
   phoneNumbers: PhoneNumber[],
   countryCode: string | null,
   phoneNumber: string | null,
 ): Promise<any> => {
   return new Promise(async resolve => {
-    const numbers: any = [];
+    const numbers: ContactPhonesResponse[] = [];
     const numberPattern = /\d+/g;
     const phoneNumberLength = phoneNumber && +phoneNumber?.length;
     if (phoneNumbers && phoneNumbers.length > 0) {
@@ -283,10 +307,15 @@ const getAvailableNumberDeepScan = async (
           (lastPromise, phone) =>
             lastPromise.then(async () => {
               if (phone.number.match(numberPattern) !== null) {
-                const cleanPhone: any = {
-                  digit: phone.number.match(numberPattern)?.join(''),
-                  countryCode: null,
+                const cleanPhone: ContactPhonesResponse = {
+                  id: +phone.id,
+                  contact_phone_guid: uuid.v4().toString(),
+                  digit:
+                    phone.number.match(numberPattern)?.join('').toString() ||
+                    '',
                   areaCode: null,
+                  countryCode: null,
+                  type: null,
                 };
 
                 const country = countries.find(
@@ -378,6 +407,7 @@ const getAvailableNumberDeepScan = async (
     }
   });
 };
+
 const cleanContacts = async (
   contact: ContactResponse,
 ): Promise<ContactResponse> => {
@@ -386,13 +416,14 @@ const cleanContacts = async (
       contact.contacts = contact.contacts.filter(
         o => o.areaCode !== null && o.digit.length > 5,
       );
-      let uniqueChars: any = [];
-      contact.contacts.forEach(c => {
+      let uniqueChars: ContactPhonesResponse[] = [];
+      contact.contacts.forEach((c: ContactPhonesResponse) => {
         if (uniqueChars.length === 0) {
           uniqueChars.push(c);
         } else {
           const findIndex = uniqueChars.findIndex(
-            (o: any) => +o.digit === +c.digit && o.areaCode === c.areaCode,
+            (o: ContactPhonesResponse) =>
+              +o.digit === +c.digit && o.areaCode === c.areaCode,
           );
           if (findIndex === -1) {
             uniqueChars.push(c);
@@ -409,17 +440,103 @@ const getAllContact = async () => {
   return await Contacts.getAll();
 };
 
+export const contactsGetDiffForDatabase = async (
+  databaseContacts: DatabaseContactResponse[],
+  contactsStore: ContactResponse[],
+): Promise<{contactsToUpload: any}> => {
+  return new Promise(resolve => {
+    if (databaseContacts && contactsStore && contactsStore.length > 0) {
+      const contactsToUpload: any = [];
+      contactsStore.forEach(contact => {
+        const findIndex = databaseContacts.findIndex(
+          (o: DatabaseContactResponse) => +o.contact_id === +contact.recordID,
+        );
+        if (findIndex !== -1) {
+          let isItChangeInfo = false;
+          let isItChangeContacts = false;
+          const dContact = databaseContacts[findIndex];
+          const nContact = contact;
+
+          nContact.contacts?.forEach((n: ContactPhonesResponse) => {
+            const findPhoneIndex = dContact.contact_phones?.findIndex(
+              (o: DatabaseContactPhonesResponse) =>
+                +o.contact_phone_id === +n.id && o.digit === n.digit,
+            );
+            if (findPhoneIndex === -1) {
+              isItChangeContacts = true;
+            }
+          });
+
+          if (
+            (contact.fullName !== null &&
+              dContact.full_name !== null &&
+              contact.fullName?.trim() !== dContact.full_name?.trim()) ||
+            (contact.lastName !== null &&
+              dContact.last_name !== null &&
+              contact.lastName?.trim() !== dContact.last_name?.trim()) ||
+            (contact.name != null &&
+              dContact.name !== null &&
+              contact.name?.trim() !== dContact.name?.trim())
+          ) {
+            contact.fullName = dContact.full_name;
+            contact.lastName = dContact.last_name;
+            contact.name = dContact.name;
+            isItChangeInfo = true;
+          }
+
+          if (isItChangeInfo || isItChangeContacts) {
+            contactsToUpload.push({type: 'updated', data: contact});
+          }
+        } else {
+          contactsToUpload.push({type: 'new', data: contact});
+        }
+        resolve({contactsToUpload: contactsToUpload});
+      });
+    } else {
+      resolve({contactsToUpload: []});
+    }
+  });
+};
 export type ContactResponse = {
   userGuid: string | null;
   name: string | null;
   fullName: string | null;
   lastName: string | null;
-  image?: ArrayBufferLike | null;
-  contacts?: ContactPhonesResponse[] | null;
+  recordID: number;
+  contacts: ContactPhonesResponse[] | null;
 };
 export type ContactPhonesResponse = {
+  id: number;
   digit: string;
-  areaCode: string;
-  countryCode: string;
+  contact_phone_guid: string;
+  areaCode: string | null;
+  countryCode: string | null;
+  type: string | null;
+};
+export type DatabaseContactResponse = {
+  id: number;
+  contact_id: string;
+  user_guid: string;
+  name: string;
+  full_name: string;
+  active: number;
+  last_name: string;
+  contact_phones: DatabaseContactPhonesResponse[];
+  created_at: string;
+  deleted_at: string;
+  updated_at: string;
+};
+export type DatabaseContactPhonesResponse = {
+  id: number;
+  contact_id: string;
+  contact_phone_guid: string;
+  contact_phone_id: string;
+  digit: string;
+  active: number;
+  area_code: string;
+  country_code: string;
   type: string;
+  created_at: string;
+  deleted_at: string;
+  updated_at: string;
 };
