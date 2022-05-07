@@ -17,12 +17,13 @@ import LoginScreenNumberInfo from '../screens/LoginScreen/login_number_info';
 import ContactScreen from '../screens/ContactScreen';
 import ChooseContact from '../screens/ContactScreen/ChooseContact';
 import CreateList from '../screens/ContactScreen/CreateList';
+import CreateTemplate from '../screens/TemplatesScreen/CreateTemplate';
 
 // MainScreen Screens
 import MainScreen from '../screens/MainScreen';
 
 // SettingsScreen Screens
-import SettingsScreen from '../screens/SettingsScreen';
+import TemplatesScreen from '../screens/TemplatesScreen';
 
 // PermissionScreen Screens
 import PermissionScreen from '../screens/PermissionScreen';
@@ -38,20 +39,13 @@ import {
 } from '../store/slices/login';
 import {getData, storeData} from '../utils/async-storage';
 // import Sidebar from '../components/Sidebar';
-import GroupActive from '../assets/images/tabs/group-active.svg';
-import Group from '../assets/images/tabs/group.svg';
-import SettingsActive from '../assets/images/tabs/settings-active.svg';
-import Settings from '../assets/images/tabs/settings.svg';
-import SingleActive from '../assets/images/tabs/single-active.svg';
-import Single from '../assets/images/tabs/single.svg';
-import {
-  EmitterSubscription,
-  Keyboard,
-  KeyboardEvent,
-  Platform,
-} from 'react-native';
-import {KEYBOARD_EVENT_CHANGE} from '../store/slices/keyboard';
-import {badge} from '../constants/styles/colors';
+import Lists from '../assets/images/tabs/lists.svg';
+import ListsActive from '../assets/images/tabs/lists-active.svg';
+import Templates from '../assets/images/tabs/templates.svg';
+import TemplatesActive from '../assets/images/tabs/templates-active.svg';
+import Timers from '../assets/images/tabs/timers.svg';
+import TimersActive from '../assets/images/tabs/timers-active.svg';
+import {View} from 'react-native';
 import LoginCountryScreen from '../screens/LoginScreen/LoginCountryScreen';
 import OneSignal from 'react-native-onesignal';
 import {
@@ -68,8 +62,9 @@ import {
   canDisplayOverOtherApps,
   isAccessibilityOn,
 } from 'react-native-accessibility-manager-plugin';
+
 OneSignal.setLogLevel(6, 0);
-OneSignal.setAppId('d0cc3e49-cceb-43f7-9f1e-de797979fcc1');
+OneSignal.setAppId('1b40bb5e-2ddb-4741-9346-0245c767d497');
 export default function Navigation() {
   const dispatch = useDispatch();
   const navTheme = DefaultTheme;
@@ -143,59 +138,59 @@ export default function Navigation() {
       });
     }, 10);
   }, [dispatch]);
-  useEffect(() => {
-    if (Platform.OS === 'ios') {
-      const keyboardListenerWillHide: EmitterSubscription =
-        Keyboard.addListener('keyboardWillHide', (event: KeyboardEvent) => {
-          dispatch(
-            KEYBOARD_EVENT_CHANGE({
-              type: 'keyboardWillHide',
-              event: event,
-            }),
-          );
-        });
-      const keyboardListenerWillShow: EmitterSubscription =
-        Keyboard.addListener('keyboardWillShow', (event: KeyboardEvent) => {
-          dispatch(
-            KEYBOARD_EVENT_CHANGE({
-              type: 'keyboardWillShow',
-              event: event,
-            }),
-          );
-        });
-      return () => {
-        keyboardListenerWillHide.remove();
-        keyboardListenerWillShow.remove();
-      };
-    } else {
-      const keyboardListenerDidHide: EmitterSubscription = Keyboard.addListener(
-        'keyboardDidHide',
-        (event: KeyboardEvent) => {
-          dispatch(
-            KEYBOARD_EVENT_CHANGE({
-              type: 'keyboardDidHide',
-              event: event,
-            }),
-          );
-        },
-      );
-      const keyboardListenerDidShow: EmitterSubscription = Keyboard.addListener(
-        'keyboardDidShow',
-        (event: KeyboardEvent) => {
-          dispatch(
-            KEYBOARD_EVENT_CHANGE({
-              type: 'keyboardDidShow',
-              event: event,
-            }),
-          );
-        },
-      );
-      return () => {
-        keyboardListenerDidHide.remove();
-        keyboardListenerDidShow.remove();
-      };
-    }
-  }, [dispatch]);
+  // useEffect(() => {
+  //   if (Platform.OS === 'ios') {
+  //     const keyboardListenerWillHide: EmitterSubscription =
+  //       Keyboard.addListener('keyboardWillHide', (event: KeyboardEvent) => {
+  //         dispatch(
+  //           KEYBOARD_EVENT_CHANGE({
+  //             type: 'keyboardWillHide',
+  //             event: event,
+  //           }),
+  //         );
+  //       });
+  //     const keyboardListenerWillShow: EmitterSubscription =
+  //       Keyboard.addListener('keyboardWillShow', (event: KeyboardEvent) => {
+  //         dispatch(
+  //           KEYBOARD_EVENT_CHANGE({
+  //             type: 'keyboardWillShow',
+  //             event: event,
+  //           }),
+  //         );
+  //       });
+  //     return () => {
+  //       keyboardListenerWillHide.remove();
+  //       keyboardListenerWillShow.remove();
+  //     };
+  //   } else {
+  //     const keyboardListenerDidHide: EmitterSubscription = Keyboard.addListener(
+  //       'keyboardDidHide',
+  //       (event: KeyboardEvent) => {
+  //         dispatch(
+  //           KEYBOARD_EVENT_CHANGE({
+  //             type: 'keyboardDidHide',
+  //             event: event,
+  //           }),
+  //         );
+  //       },
+  //     );
+  //     const keyboardListenerDidShow: EmitterSubscription = Keyboard.addListener(
+  //       'keyboardDidShow',
+  //       (event: KeyboardEvent) => {
+  //         dispatch(
+  //           KEYBOARD_EVENT_CHANGE({
+  //             type: 'keyboardDidShow',
+  //             event: event,
+  //           }),
+  //         );
+  //       },
+  //     );
+  //     return () => {
+  //       keyboardListenerDidHide.remove();
+  //       keyboardListenerDidShow.remove();
+  //     };
+  //   }
+  // }, [dispatch]);
 
   return (
     <NavigationContainer theme={navTheme}>
@@ -230,6 +225,21 @@ const RootNavigator = () => {
         permissions.accessibility && permissions.displayOverOtherApps ? (
           <Stack.Group>
             <Stack.Screen name="Root" component={TabNavigator} />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="CreateList"
+              component={CreateList}
+            />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="CreateTemplate"
+              component={CreateTemplate}
+            />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="ChooseContact"
+              component={ChooseContact}
+            />
           </Stack.Group>
         ) : (
           <Stack.Group>
@@ -277,36 +287,52 @@ const TabNavigator = () => {
         tabBarIcon: ({focused}) => {
           let iconName: any;
           if (route.name === 'Group') {
-            iconName = focused ? <GroupActive /> : <Group />;
+            iconName = focused ? (
+              <View style={{width: 32}}>
+                <ListsActive />
+              </View>
+            ) : (
+              <View style={{width: 32}}>
+                <Lists />
+              </View>
+            );
           } else if (route.name === 'Single') {
-            iconName = focused ? <SingleActive /> : <Single />;
-          } else if (route.name === 'Settings') {
-            iconName = focused ? <SettingsActive /> : <Settings />;
+            iconName = focused ? (
+              <View style={{width: 32}}>
+                <TimersActive />
+              </View>
+            ) : (
+              <View style={{width: 32}}>
+                <Timers />
+              </View>
+            );
+          } else if (route.name === 'Templates') {
+            iconName = focused ? (
+              <View style={{width: 32}}>
+                <TemplatesActive />
+              </View>
+            ) : (
+              <View style={{width: 32}}>
+                <Templates />
+              </View>
+            );
           }
-
           return iconName;
         },
         tabBarShowLabel: false,
         tabBarStyle: {height: 74},
-        tabBarActiveTintColor: '#141E4B',
-        tabBarBadgeStyle: {
-          position: 'absolute',
-          backgroundColor: badge.color,
-          left: -28,
-          fontFamily: 'Montserrat-SemiBold',
-          fontSize: 11,
-          opacity: 1,
-        },
       })}>
       <Tab.Screen name="Group" component={GroupStackNavigator} />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Single"
         component={SingleStackNavigator}
-        options={{
-          tabBarBadge: 1,
-        }}
-      />
-      <Tab.Screen name="Settings" component={SettingsStackNavigator} />
+        options={
+          {
+            //tabBarBadge: 1,
+          }
+        }
+      /> */}
+      <Tab.Screen name="Templates" component={TemplatesStackNavigator} />
     </Tab.Navigator>
   );
 };
@@ -319,16 +345,6 @@ function GroupStackNavigator() {
         name="ContactScreen"
         component={ContactScreen}
       />
-      <GroupStack.Screen
-        options={{animation: 'slide_from_right'}}
-        name="ChooseContact"
-        component={ChooseContact}
-      />
-      <GroupStack.Screen
-        options={{animation: 'slide_from_right'}}
-        name="CreateList"
-        component={CreateList}
-      />
     </GroupStack.Navigator>
   );
 }
@@ -340,10 +356,13 @@ function SingleStackNavigator() {
     </SingleStack.Navigator>
   );
 }
-function SettingsStackNavigator() {
+function TemplatesStackNavigator() {
   return (
     <SettingsStack.Navigator screenOptions={{headerShown: false}}>
-      <SettingsStack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <SettingsStack.Screen
+        name="TemplatesScreen"
+        component={TemplatesScreen}
+      />
     </SettingsStack.Navigator>
   );
 }

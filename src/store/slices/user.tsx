@@ -1,5 +1,10 @@
-import {createSlice} from '@reduxjs/toolkit';
-import {USER} from '../../constants/typescript/user';
+import {createSlice, PayloadAction, SliceCaseReducers} from '@reduxjs/toolkit';
+import {
+  USER,
+  USER_LISTS,
+  USER_MESSAGE_TEPMLATES,
+} from '../../constants/typescript/user';
+import {DatabaseContactResponse} from '../../utils/native-contact';
 
 const initialState: USER = {
   id: null,
@@ -23,17 +28,32 @@ const initialState: USER = {
   user_guid: null,
 };
 
-export const userSlice = createSlice({
+export const userSlice = createSlice<USER, SliceCaseReducers<any>>({
   name: 'user',
   initialState,
   reducers: {
-    USER_CHANGE: (state, action) => {
+    USER_CHANGE: (state: USER, action: PayloadAction<USER>) => {
       return action.payload;
+    },
+    USER_MESSAGES_TEMPLATE_ADD: (
+      state: USER,
+      action: PayloadAction<USER_MESSAGE_TEPMLATES>,
+    ) => {
+      if (!action.payload) {
+        return state;
+      }
+      state.message_templates?.push(action.payload);
+    },
+    USER_LISTS_ADD: (state: USER, action: PayloadAction<USER_LISTS>) => {
+      if (!action.payload) {
+        return state;
+      }
+      state.lists?.push(action.payload);
     },
   },
 });
-
-export const {USER_CHANGE} = userSlice.actions;
+export const {USER_CHANGE, USER_MESSAGES_TEMPLATE_ADD, USER_LISTS_ADD} =
+  userSlice.actions;
 
 export const getUserStore = (state: {user: USER}) => state.user;
 

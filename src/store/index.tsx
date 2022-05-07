@@ -28,7 +28,9 @@ export const createStore = (
       [userApi.reducerPath]: userApi.reducer,
     },
     middleware: getDefaultMiddleware =>
-      getDefaultMiddleware().concat(loginApi.middleware, userApi.middleware),
+      getDefaultMiddleware({
+        serializableCheck: false,
+      }).concat(loginApi.middleware, userApi.middleware),
     ...options,
   });
 

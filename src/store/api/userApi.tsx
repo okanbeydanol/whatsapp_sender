@@ -1,6 +1,10 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {BASE_API_URL} from '../../constants';
-import {USER} from '../../constants/typescript/user';
+import {
+  DatabaseMessageTemplates,
+  USER,
+  USER_MESSAGE_TEPMLATES,
+} from '../../constants/typescript/user';
 import {DatabaseContactResponse} from '../../utils/native-contact';
 
 export const userApi = createApi({
@@ -35,6 +39,27 @@ export const userApi = createApi({
         body: patch,
       }),
     }),
+    createUserList: build.query<DatabaseContactResponse[], any>({
+      query: ({...patch}) => ({
+        url: 'user_list_create',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    getUserMessageTemplates: build.query<DatabaseMessageTemplates, any>({
+      query: ({...patch}) => ({
+        url: 'get_user_message_templates',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    createUserMessageTemplates: build.query<USER_MESSAGE_TEPMLATES, any>({
+      query: ({...patch}) => ({
+        url: 'user_message_template_create',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
   }),
 });
 
@@ -43,4 +68,7 @@ export const {
   useLazyCheckUserPacketQuery,
   useLazyGetUserContactsQuery,
   useLazyUpdateUserContactsQuery,
+  useLazyCreateUserListQuery,
+  useLazyGetUserMessageTemplatesQuery,
+  useLazyCreateUserMessageTemplatesQuery,
 } = userApi;

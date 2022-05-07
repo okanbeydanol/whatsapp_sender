@@ -2,6 +2,8 @@ apply plugin: "com.android.application"
 
 apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
 
+apply plugin: 'com.google.gms.google-services' // <- Add this line
+
 import com.android.build.OutputFile
 
 /**
@@ -196,6 +198,8 @@ dependencies {
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+    implementation project(path: ":@react-native-firebase_analytics")
+    implementation project(':react-native-fs')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'

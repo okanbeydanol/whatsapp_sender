@@ -308,6 +308,7 @@ const getAvailableNumberDeepScan = async (
             lastPromise.then(async () => {
               if (phone.number.match(numberPattern) !== null) {
                 const cleanPhone: ContactPhonesResponse = {
+                  // ID exist but typescript core responder doesnt exist
                   id: +phone.id,
                   contact_phone_guid: uuid.v4().toString(),
                   digit:
@@ -520,6 +521,7 @@ export type DatabaseContactResponse = {
   name: string;
   full_name: string;
   active: number;
+  checked: boolean | undefined;
   last_name: string;
   contact_phones: DatabaseContactPhonesResponse[];
   created_at: string;

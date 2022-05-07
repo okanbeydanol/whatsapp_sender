@@ -48,6 +48,7 @@ const usePacket = () => {
         // });
       }
       callback && callback(leftTime);
+
       leftTime--;
     }, 1000);
     return interval;

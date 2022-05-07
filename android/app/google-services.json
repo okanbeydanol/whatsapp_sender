@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "842990693494",
+    "project_id": "wpsender-f3a04",
+    "storage_bucket": "wpsender-f3a04.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842990693494:android:36880aeb0298ff1e640357",
+        "android_client_info": {
+          "package_name": "com.whatsapp_sender"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "842990693494-pi4269ga86ve84mep5d2afq2thtjfd2k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1_CcejiiNh3iavLmhUFnRaygecM049T4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "842990693494-pi4269ga86ve84mep5d2afq2thtjfd2k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

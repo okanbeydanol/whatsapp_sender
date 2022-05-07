@@ -4,6 +4,10 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.ReactNativeBlobUtil.ReactNativeBlobUtilPackage;
+import com.rnfs.RNFSPackage;
+import com.rnfs.RNFSPackage;
+import io.invertase.firebase.analytics.ReactNativeFirebaseAnalyticsPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -26,7 +30,8 @@ public class MainApplication extends Application implements ReactApplication {
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
-          return packages;
+
+            return packages;
         }
 
         @Override

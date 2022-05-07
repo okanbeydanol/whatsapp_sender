@@ -24,3 +24,7 @@ export const badge = {
 export const delivered = {
   color: '#c4c4c480',
 };
+
+export const green = {
+  color: 'green',
+};

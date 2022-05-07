@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   Dimensions,
-  GestureResponderEvent,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,23 +8,23 @@ import {
 } from 'react-native';
 import React from 'react';
 import {primary, secondary} from '../../constants/styles/colors';
+import {Icon} from '@rneui/themed';
 interface AppButtonProps {
-  onPress?: (event: GestureResponderEvent) => void;
-  title?: string;
-  style?: any;
-  textColor?: string;
+  data: AppButtonPropsData;
+  style: any;
   isLoading?: boolean;
 }
-const AppButton = ({
-  onPress,
-  title,
-  style,
-  textColor = '#fff',
-  isLoading,
-}: AppButtonProps) => {
+interface AppButtonPropsData {
+  text: string;
+  name: string;
+  size: number;
+  color: string;
+  handler: () => void;
+}
+const AppIconButton = ({style, isLoading, data}: AppButtonProps) => {
   const styles = StyleSheet.create({
     textStyle: {
-      color: textColor,
+      color: '#000000',
       fontFamily: 'Montserrat-Medium',
       fontSize: 13,
       textTransform: 'capitalize',
@@ -63,20 +62,28 @@ const AppButton = ({
     <TouchableOpacity
       disabled={isLoading}
       activeOpacity={0.7}
-      onPress={onPress}
+      onPress={() => {
+        data.handler();
+      }}
       style={[styles.buttonStyle, style]}>
+      <Icon
+        name={data.name}
+        size={data.size}
+        color={data.color}
+        style={styles.iconStyle}
+      />
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.textStyle}>{title}</Text>
+          <Text style={styles.textStyle}>{data.text}</Text>
           <ActivityIndicator color={secondary.color} style={styles.loading} />
         </View>
       ) : (
         <View>
-          <Text style={styles.textStyle}>{title}</Text>
+          <Text style={styles.textStyle}>{data.text}</Text>
         </View>
       )}
     </TouchableOpacity>
   );
 };
 
-export default AppButton;
+export default AppIconButton;
