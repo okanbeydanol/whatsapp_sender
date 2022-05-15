@@ -5,6 +5,7 @@ import {
   AppStateStatus,
   Dimensions,
   NativeEventSubscription,
+  PermissionsAndroid,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,6 +17,7 @@ import {
   openAccessibilitySettings,
   openDisplayOverOtherAppsPermissionSettings,
 } from 'react-native-accessibility-manager-plugin';
+import {checkNotifications} from 'react-native-permissions';
 import Image from 'react-native-scalable-image';
 
 import Swiper from 'react-native-swiper';
@@ -25,32 +27,74 @@ import {
   getPermissionsStore,
   PERMISSIONS_CHANGE,
 } from '../../store/slices/permissions';
+import {storeData} from '../../utils/async-storage';
 
 const PermissionScreen = () => {
-  const permissions = useSelector(getPermissionsStore);
+  //Dispatch
   const dispatch = useDispatch();
-  let appState: NativeEventSubscription;
-  console.log('%c renderlandı', 'background: #222; color: #bada55');
-  useEffect(() => {
-    if (appState === undefined) {
-      appState = AppState.addEventListener(
-        'change',
-        async (state: AppStateStatus) => {
-          if (state === 'active') {
-            const accessibilityOn = await isAccessibilityOn();
-            const displayOverOtherApps = await canDisplayOverOtherApps();
-            dispatch(
-              PERMISSIONS_CHANGE({
-                accessibility: accessibilityOn,
-                displayOverOtherApps: displayOverOtherApps,
-              }),
-            );
-          }
-        },
-      );
-    }
-  }, [dispatch]);
+
+  //Selectors
+  const permissions = useSelector(getPermissionsStore);
+
+  //Refs
   let ref: any = useRef();
+
+  //UseEffects
+  //Check if the app is in foreground and if the user has granted the permissions
+  useEffect(() => {
+    const appState: NativeEventSubscription = AppState.addEventListener(
+      'change',
+      async (state: AppStateStatus) => {
+        if (state === 'active') {
+          if (!permissions.accessibility) {
+            ref.current.scrollTo(1, true);
+          } else {
+            ref.current.scrollTo(2, true);
+          }
+          const accessibilityOn = await isAccessibilityOn();
+          const displayOverOtherApps = await canDisplayOverOtherApps();
+          const storage = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          );
+          const location = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          );
+          const contacts = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+          );
+          const camera = await PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.CAMERA,
+          );
+          const notification = await (await checkNotifications()).status;
+          storeData('[permissions]', {
+            accessibility: accessibilityOn,
+            displayOverOtherApps: displayOverOtherApps,
+            location: location,
+            contacts: contacts,
+            camera: camera,
+            storage: storage,
+            notification: notification === 'granted' ? true : false,
+          });
+          dispatch(
+            PERMISSIONS_CHANGE({
+              accessibility: accessibilityOn,
+              displayOverOtherApps: displayOverOtherApps,
+              location: location,
+              contacts: contacts,
+              camera: camera,
+              storage: storage,
+              notification: notification === 'granted' ? true : false,
+            }),
+          );
+        }
+
+        return () => {
+          appState.remove();
+        };
+      },
+    );
+  }, [dispatch]);
+
   useEffect(() => {
     if (ref.current) {
       if (!permissions.accessibility) {

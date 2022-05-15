@@ -25,15 +25,18 @@ export const uploadImage = async (
       const imageNames = [];
       for (let index = 0; index < imageArrayToUpload.length; index++) {
         const data: ImageArrayToUpload = imageArrayToUpload[index];
-        body.push({
-          name: data.name.replace('.' + data.name.split('.').pop(), ''),
-          filename: data.name,
-          type: 'image/jpeg',
-          data: ReactNativeBlobUtil.wrap(data.path),
-        });
-        imageNames.push({
-          name: data.name.replace('.' + data.name.split('.').pop(), ''),
-        });
+        if (data.name && data.path) {
+          body.push({
+            name: data.name.replace('.' + data.name.split('.').pop(), ''),
+            filename: data.name,
+            type: 'image/jpeg',
+            data: ReactNativeBlobUtil.wrap(data.path),
+          });
+          imageNames.push({
+            name: data.name.replace('.' + data.name.split('.').pop(), ''),
+            type: 'image/jpeg',
+          });
+        }
       }
 
       body.push({
@@ -81,9 +84,9 @@ export const uploadImage = async (
 };
 
 export type ImageArrayToUpload = {
-  name: string;
-  path: string;
-  type: string;
+  name: string | null;
+  path: string | null;
+  type: string | null;
 };
 export type ExtraData = {
   name: string;

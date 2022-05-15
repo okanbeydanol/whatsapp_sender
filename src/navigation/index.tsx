@@ -1,8 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {useEffect} from 'react';
-import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
+import {
+  DefaultTheme,
+  NavigationContainer,
+  useNavigation,
+} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-// import {createDrawerNavigator} from '@react-navigation/drawer';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {batch, useDispatch, useSelector} from 'react-redux';
 
@@ -14,10 +19,14 @@ import LoginScreenNumberOtp from '../screens/LoginScreen/login_number_otp';
 import LoginScreenNumberInfo from '../screens/LoginScreen/login_number_info';
 
 // ContactScreen Screens
-import ContactScreen from '../screens/ContactScreen';
-import ChooseContact from '../screens/ContactScreen/ChooseContact';
-import CreateList from '../screens/ContactScreen/CreateList';
+import ListScreen from '../screens/ListScreen/index';
+import ChooseContact from '../screens/ListScreen/ChooseContact';
+import CreateList from '../screens/ListScreen/CreateList';
+import StartWhatsappSender from '../screens/ListScreen/StartWhatsappSender';
+
+import EditList from '../screens/ListScreen/EditList';
 import CreateTemplate from '../screens/TemplatesScreen/CreateTemplate';
+import EditTemplate from '../screens/TemplatesScreen/EditTemplate';
 
 // MainScreen Screens
 import MainScreen from '../screens/MainScreen';
@@ -38,14 +47,14 @@ import {
   LOGIN_SUCCESS,
 } from '../store/slices/login';
 import {getData, storeData} from '../utils/async-storage';
-// import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Sidebar';
 import Lists from '../assets/images/tabs/lists.svg';
 import ListsActive from '../assets/images/tabs/lists-active.svg';
 import Templates from '../assets/images/tabs/templates.svg';
 import TemplatesActive from '../assets/images/tabs/templates-active.svg';
 import Timers from '../assets/images/tabs/timers.svg';
 import TimersActive from '../assets/images/tabs/timers-active.svg';
-import {View} from 'react-native';
+import {PermissionsAndroid, View} from 'react-native';
 import LoginCountryScreen from '../screens/LoginScreen/LoginCountryScreen';
 import OneSignal from 'react-native-onesignal';
 import {
@@ -62,14 +71,26 @@ import {
   canDisplayOverOtherApps,
   isAccessibilityOn,
 } from 'react-native-accessibility-manager-plugin';
+import {checkNotifications} from 'react-native-permissions';
+import useAppUpdate from '../hooks/useAppUpdate';
 
+//Initialize OneSignal
 OneSignal.setLogLevel(6, 0);
 OneSignal.setAppId('1b40bb5e-2ddb-4741-9346-0245c767d497');
+
+//Initialize Navigation
 export default function Navigation() {
+  //Dispatch
   const dispatch = useDispatch();
+  //Get Theme
   const navTheme = DefaultTheme;
   navTheme.colors.background = '#fff';
 
+  //Use app update
+  const appUpdate = useAppUpdate();
+  appUpdate.check_app_update();
+
+  //Initialize Begining Controller
   useEffect(() => {
     const getUserGuid = async () => {
       let userGuid;
@@ -81,15 +102,20 @@ export default function Navigation() {
       return userGuid;
     };
     setTimeout(async () => {
+      //Get Device Data
       const userGuid = await getUserGuid();
       const fingerprint = await getFingerprint();
       const androidId = await getAndroidId();
       const uniqueId = await getUniqueId();
+
+      //Update OneSignal Device Data
       OneSignal.sendTags({
         uniqueId: uniqueId,
         fingerprint: fingerprint,
         androidId: androidId,
       });
+
+      //Update Device Data Store
       const deviceInfo = await getData('[deviceInfo]');
       if (deviceInfo === null) {
         storeData('[deviceInfo]', {
@@ -98,12 +124,36 @@ export default function Navigation() {
           androidId: androidId,
         });
       }
+
+      //Get Permissions
       const accessibility = await isAccessibilityOn();
       const displayOverOtherApps = await canDisplayOverOtherApps();
+      const storage = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      );
+      const location = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+      const contacts = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+      );
+      const camera = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+      );
+      const notification = await (await checkNotifications()).status;
+
+      //Store Permissions
       storeData('[permissions]', {
         accessibility: accessibility,
         displayOverOtherApps: displayOverOtherApps,
+        location: location,
+        contacts: contacts,
+        camera: camera,
+        storage: storage,
+        notification: notification === 'granted' ? true : false,
       });
+
+      //Dispatch Device Info, Permissions, Login
       batch(async () => {
         dispatch(
           DEVICEINFO_CHANGE({
@@ -133,6 +183,11 @@ export default function Navigation() {
           PERMISSIONS_CHANGE({
             accessibility: accessibility,
             displayOverOtherApps: displayOverOtherApps,
+            location: location,
+            contacts: contacts,
+            camera: camera,
+            storage: storage,
+            notification: notification === 'granted' ? true : false,
           }),
         );
       });
@@ -198,16 +253,18 @@ export default function Navigation() {
     </NavigationContainer>
   );
 }
+
+//Navigator Stacks
 const Stack = createNativeStackNavigator(); // createStackNavigator https://reactnavigation.org/docs/stack-navigator
 const SingleStack = createNativeStackNavigator();
 const GroupStack = createNativeStackNavigator();
 const SettingsStack = createNativeStackNavigator();
 const LoadingStack = createNativeStackNavigator();
-// const Drawer = createDrawerNavigator();
+const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
+
 const RootNavigator = () => {
   const permissions = useSelector(getPermissionsStore);
-  // const {navigate} = useNavigation();
   const loginStore = useSelector(getLoginStore);
   useEffect(() => {
     if (loginStore.type === LoginType.LOGIN_SUCCESS) {
@@ -224,7 +281,7 @@ const RootNavigator = () => {
       {loginStore.type === LoginType.LOGIN_SUCCESS ? (
         permissions.accessibility && permissions.displayOverOtherApps ? (
           <Stack.Group>
-            <Stack.Screen name="Root" component={TabNavigator} />
+            <Stack.Screen name="Tabs" component={DrawerNavigator} />
             <Stack.Screen
               options={{animation: 'slide_from_right'}}
               name="CreateList"
@@ -232,8 +289,24 @@ const RootNavigator = () => {
             />
             <Stack.Screen
               options={{animation: 'slide_from_right'}}
+              name="StartWhatsappSender"
+              component={StartWhatsappSender}
+            />
+
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="EditList"
+              component={EditList}
+            />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
               name="CreateTemplate"
               component={CreateTemplate}
+            />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="EditTemplate"
+              component={EditTemplate}
             />
             <Stack.Screen
               options={{animation: 'slide_from_right'}}
@@ -283,7 +356,11 @@ const TabNavigator = () => {
     <Tab.Navigator
       initialRouteName="Single"
       screenOptions={({route}) => ({
+        lazy: true,
+        animationEnabled: false,
+        swipeEnabled: true,
         headerShown: false,
+        drawerHideStatusBarOnOpen: false,
         tabBarIcon: ({focused}) => {
           let iconName: any;
           if (route.name === 'Group') {
@@ -342,8 +419,8 @@ function GroupStackNavigator() {
     <GroupStack.Navigator screenOptions={{headerShown: false}}>
       <GroupStack.Screen
         options={{animation: 'slide_from_right'}}
-        name="ContactScreen"
-        component={ContactScreen}
+        name="ListScreen"
+        component={ListScreen}
       />
     </GroupStack.Navigator>
   );
@@ -356,6 +433,7 @@ function SingleStackNavigator() {
     </SingleStack.Navigator>
   );
 }
+
 function TemplatesStackNavigator() {
   return (
     <SettingsStack.Navigator screenOptions={{headerShown: false}}>
@@ -379,17 +457,20 @@ function LoadingStackNavigator() {
   );
 }
 
-// const DrawerNavigator = () => {
-//   return (
-//     <Drawer.Navigator
-//       screenOptions={{
-//         headerShown: false,
-//         drawerType: 'front',
-//         drawerPosition: 'left',
-//       }}
-//       drawerContent={() => <Sidebar label="DenemeHome" />}
-//       initialRouteName="DrawerHome">
-//       <Drawer.Screen name="Root" component={TabNavigator} />
-//     </Drawer.Navigator>
-//   );
-// };
+const DrawerNavigator = () => {
+  const navigation = useNavigation();
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        headerShown: false,
+        drawerType: 'slide',
+        drawerPosition: 'left',
+      }}
+      drawerContent={() => (
+        <Sidebar label="DenemeHome" navigation={navigation} />
+      )}
+      initialRouteName="DrawerHome">
+      <Drawer.Screen name="Root" component={TabNavigator} />
+    </Drawer.Navigator>
+  );
+};

@@ -39,9 +39,30 @@ export const userApi = createApi({
         body: patch,
       }),
     }),
-    createUserList: build.query<DatabaseContactResponse[], any>({
+    createUserList: build.query<DatabaseContactResponse, any>({
       query: ({...patch}) => ({
         url: 'user_list_create',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    updateUserList: build.query<DatabaseContactResponse[], any>({
+      query: ({...patch}) => ({
+        url: 'user_list_update',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    getUserList: build.query<USER_MESSAGE_TEPMLATES[], any>({
+      query: ({...patch}) => ({
+        url: 'user_list',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    removeUserList: build.query<USER_MESSAGE_TEPMLATES[], any>({
+      query: ({...patch}) => ({
+        url: 'user_list_remove',
         method: 'POST',
         body: patch,
       }),
@@ -60,6 +81,26 @@ export const userApi = createApi({
         body: patch,
       }),
     }),
+    updateUserMessageTemplates: build.query<USER_MESSAGE_TEPMLATES, any>({
+      query: ({...patch}) => ({
+        url: 'user_message_template_update',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    deleteUserMessageTemplates: build.query<USER_MESSAGE_TEPMLATES, any>({
+      query: ({...patch}) => ({
+        url: 'user_message_template_delete',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
+    getAppVersion: build.query<string, any>({
+      query: () => ({
+        url: 'app_version',
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -69,6 +110,12 @@ export const {
   useLazyGetUserContactsQuery,
   useLazyUpdateUserContactsQuery,
   useLazyCreateUserListQuery,
+  useLazyUpdateUserListQuery,
+  useLazyRemoveUserListQuery,
   useLazyGetUserMessageTemplatesQuery,
   useLazyCreateUserMessageTemplatesQuery,
+  useLazyUpdateUserMessageTemplatesQuery,
+  useLazyDeleteUserMessageTemplatesQuery,
+  useLazyGetUserListQuery,
+  useLazyGetAppVersionQuery,
 } = userApi;

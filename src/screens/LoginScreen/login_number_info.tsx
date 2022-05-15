@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {batch, useDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {primary} from '../../constants/styles/colors';
 import AppHeader from '../../components/Header/AppHeader';
 import AppButton from '../../components/Elements/AppButton';
@@ -19,14 +19,25 @@ import {LoginType, LOGIN_SUCCESS} from '../../store/slices/login';
 import {useLazyUpdateUserNameQuery} from '../../store/api/loginApi';
 
 const LoginScreenNumberInfo = ({route, navigation}: any) => {
+  //Route Params
+  const {userGuid} = route.params;
+
+  //Dispatch
+  const dispatch = useDispatch();
+
+  //UseTranslation
   const {t, i18n} = useTranslation();
   const selectedLanguageCode = i18n.language;
-  const dispatch = useDispatch();
-  const {userGuid} = route.params;
+
+  //Refs
   const fullnameRef: any = useRef<TextInput>(null);
 
+  //Queries
   const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
     useLazyUpdateUserNameQuery();
+
+  //UseEffects
+  //Update User Name Success
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
       dispatch(
@@ -38,14 +49,19 @@ const LoginScreenNumberInfo = ({route, navigation}: any) => {
       );
     }
   }, [data, isSuccess]);
+
+  //Update User Name Error
   useEffect(() => {
     if (isError) {
-      Alert.alert('Hata Var', 'OTP GONDERILEMIYOR', [
-        {text: 'OK', onPress: () => {}},
-      ]);
+      Alert.alert(
+        'Hata Var',
+        'Isim update edilirken bir sorunla karşılaşıldı!',
+        [{text: 'OK', onPress: () => {}}],
+      );
     }
   }, [isError]);
 
+  //Trigger name update
   const onPress = async () => {
     if (
       fullnameRef.current &&

@@ -2,14 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-  Alert,
-  Dimensions,
-  PermissionsAndroid,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Alert, Dimensions, StyleSheet, Text, View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {medium, primary, tertiary} from '../../constants/styles/colors';
 import AppHeader from '../../components/Header/AppHeader';
@@ -24,20 +17,60 @@ import countries from '../../assets/countries_details.json';
 import OneSignal from 'react-native-onesignal';
 import {useLazyCheckPhoneQuery} from '../../store/api/loginApi';
 import {getDeviceInfoStore} from '../../store/slices/deviceInfo';
+import {getPermissionsStore} from '../../store/slices/permissions';
+import usePermissions from '../../hooks/usePermissions';
 
 const LoginScreen = ({navigation}: any) => {
+  //Dispatch
+  const dispatch = useDispatch();
+
+  //Translation
+  const {t, i18n} = useTranslation();
+  // const changeLanguage = value => {
+  //   i18n
+  //     .changeLanguage(value)
+  //     .then(() => setLanguage(value))
+  //     .catch(err =>
+  // };
+  //
+  // const selectedLanguageCode = i18n.language;
+  // const [selectedValue, setSelectedValue] = useState(
+  //   selectedLanguageCode.toUpperCase(),
+  // );
+
+  //States
+  const [digit, setDigit] = useState('2342423444');
+  const [loading, setLoading] = useState(true);
+
+  //Selectors
   const countryStore = useSelector(getCountryStore);
   const deviceInfoStore = useSelector(getDeviceInfoStore);
-  const {t, i18n} = useTranslation();
-  const [digit, setDigit] = useState('2342423444');
+  const permissionStore = useSelector(getPermissionsStore);
 
-  const pickerPress = () => {
-    navigation.navigate('CountriesModal');
-  };
-  console.log('render');
+  //Hooks
+  const permission = usePermissions();
+
+  //Queries
   const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
     useLazyCheckPhoneQuery();
 
+  //UseEffects
+  //Check Permissions
+  useEffect(() => {
+    if (
+      !permissionStore.camera ||
+      !permissionStore.storage ||
+      !permissionStore.location ||
+      !permissionStore.contacts ||
+      !permissionStore.notification
+    ) {
+      permission.check_permissions();
+    } else {
+      setLoading(false);
+    }
+  }, [permissionStore]);
+
+  //Check if the user has granted the permissions open otp screen
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
       if (countryStore.label !== null && countryStore.value !== null) {
@@ -48,11 +81,6 @@ const LoginScreen = ({navigation}: any) => {
         });
       }
       if (data.not.freeze_account === null || +data.not.freeze_account === 0) {
-        console.log(
-          '%c Your Code Is: ',
-          'background: #222; color: #bada55',
-          data.not.description,
-        );
         navigation.navigate('LoginScreenNumberOtp', {
           digit: digit,
           areaCode: countryStore.label,
@@ -74,124 +102,75 @@ const LoginScreen = ({navigation}: any) => {
     }
   }, [data, isSuccess]);
 
-  const onPress = () => {
-    if (digit.length > 7) {
-      setTimeout(() => {
-        console.log('%c negidiyor', 'background: #222; color: #bada55', {
-          digit: digit,
-          areaCode: countryStore.label,
-          countryCode: countryStore.value?.toLocaleLowerCase(),
-          uniqueId: deviceInfoStore?.uniqueId,
-          fingerprint: deviceInfoStore?.fingerprint,
-          latitude: countryStore.latitude,
-          longitude: countryStore.longitude,
-          city_name: countryStore.city_name,
-        });
-        trigger({
-          digit: digit,
-          areaCode: countryStore.label,
-          countryCode: countryStore.value?.toLocaleLowerCase(),
-          uniqueId: deviceInfoStore?.uniqueId,
-          fingerprint: deviceInfoStore?.fingerprint,
-          latitude: countryStore.latitude,
-          longitude: countryStore.longitude,
-          city_name: countryStore.city_name,
-        });
-      }, 100);
-    } else {
-      Alert.alert('Boş Bırakma', 'Doldur', [{text: 'OK', onPress: () => {}}]);
-    }
-  };
-
+  //Fetch location and update user and country
   useEffect(() => {
-    if (isError) {
-      console.log('%c error', 'background: #222; color: #bada55', error);
-      Alert.alert('Hata Var', '', [{text: 'OK', onPress: () => {}}]);
-    }
-  }, [isError]);
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    if (countryStore && countryStore.value === null) {
+    if (countryStore && countryStore.value === null && !loading) {
       setTimeout(async () => {
         try {
           getData('[geocoderApiResult]').then(
             async (result: GeocoderResult | null) => {
               if (result === null) {
-                const granted = await PermissionsAndroid.request(
-                  PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                  {
-                    title: 'Cool Location Permission',
-                    message: 'We will select your country using your location!',
-                    buttonNeutral: 'Ask Me Later',
-                    buttonNegative: 'Cancel',
-                    buttonPositive: 'OK',
-                  },
-                );
-                if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                  Geolocation.getCurrentPosition(
-                    async position => {
-                      const geocoderResult: GeocoderResult =
-                        await reverseGeocode({
-                          latitude: position.coords.latitude,
-                          longitude: position.coords.longitude,
+                Geolocation.getCurrentPosition(
+                  async position => {
+                    const geocoderResult: GeocoderResult = await reverseGeocode(
+                      {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                      },
+                    );
+                    if (geocoderResult) {
+                      const country: any = countries.find(
+                        (o: any) =>
+                          o.value.toLocaleLowerCase() ===
+                          geocoderResult.addresses[0].address.countryCode.toLocaleLowerCase(),
+                      );
+                      if (country) {
+                        OneSignal.sendTags({
+                          country: geocoderResult.addresses[0].address.country,
+                          countryCode:
+                            geocoderResult.addresses[0].address.countryCode,
+                          countrySecondarySubdivision:
+                            geocoderResult.addresses[0].address
+                              .countrySecondarySubdivision,
+                          countrySubdivisionName:
+                            geocoderResult.addresses[0].address
+                              .countrySubdivisionName,
+                          postalCode:
+                            geocoderResult.addresses[0].address.postalCode,
+                          streetNumber:
+                            geocoderResult.addresses[0].address.streetNumber,
                         });
-                      if (geocoderResult) {
-                        const country: any = countries.find(
-                          (o: any) =>
-                            o.value.toLocaleLowerCase() ===
-                            geocoderResult.addresses[0].address.countryCode.toLocaleLowerCase(),
-                        );
-                        if (country) {
-                          OneSignal.sendTags({
-                            country:
-                              geocoderResult.addresses[0].address.country,
-                            countryCode:
-                              geocoderResult.addresses[0].address.countryCode,
-                            countrySecondarySubdivision:
-                              geocoderResult.addresses[0].address
-                                .countrySecondarySubdivision,
-                            countrySubdivisionName:
+                        storeData('[geocoderApiResult]', geocoderResult);
+                        dispatch(
+                          COUNTRY_CHANGE({
+                            value: country.value,
+                            label: country.label,
+                            country_name: country.country_name,
+                            latitude:
+                              geocoderResult.addresses[0].position.split(
+                                ',',
+                              )[0],
+                            longitude:
+                              geocoderResult.addresses[0].position.split(
+                                ',',
+                              )[1],
+                            city_name:
                               geocoderResult.addresses[0].address
                                 .countrySubdivisionName,
-                            postalCode:
-                              geocoderResult.addresses[0].address.postalCode,
-                            streetNumber:
-                              geocoderResult.addresses[0].address.streetNumber,
-                          });
-                          storeData('[geocoderApiResult]', geocoderResult);
-                          dispatch(
-                            COUNTRY_CHANGE({
-                              value: country.value,
-                              label: country.label,
-                              country_name: country.country_name,
-                              latitude:
-                                geocoderResult.addresses[0].position.split(
-                                  ',',
-                                )[0],
-                              longitude:
-                                geocoderResult.addresses[0].position.split(
-                                  ',',
-                                )[1],
-                              city_name:
-                                geocoderResult.addresses[0].address
-                                  .countrySubdivisionName,
-                            }),
-                          );
-                        }
+                          }),
+                        );
                       }
-                    },
-                    (err: any) => {
-                      console.warn(err.code, err.message);
-                    },
-                    {
-                      enableHighAccuracy: true,
-                      timeout: 15000,
-                      maximumAge: 10000,
-                    },
-                  );
-                }
+                    }
+                  },
+                  (err: any) => {
+                    console.warn(err.code, err.message);
+                  },
+                  {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 10000,
+                  },
+                );
               } else {
                 const country: any = countries.find(
                   (o: any) =>
@@ -219,21 +198,44 @@ const LoginScreen = ({navigation}: any) => {
         }
       }, 10);
     }
-  }, [dispatch, countryStore]);
+  }, [dispatch, countryStore, loading]);
 
-  // const changeLanguage = value => {
-  //   i18n
-  //     .changeLanguage(value)
-  //     .then(() => setLanguage(value))
-  //     .catch(err =>
-  // };
-  //
-  // const selectedLanguageCode = i18n.language;
-  // const [selectedValue, setSelectedValue] = useState(
-  //   selectedLanguageCode.toUpperCase(),
-  // );
-  // NativeSyntheticEvent<TextInputChangeEventData>
+  //Fetch phone number Error
+  useEffect(() => {
+    if (isError) {
+      Alert.alert(
+        'Hata!',
+        'Telefon kontrol edilirken bir hata ile karşılaşıldı!',
+        [{text: 'OK', onPress: () => {}}],
+      );
+    }
+  }, [isError]);
 
+  //Functions
+  //OpenCountryPicker
+  const pickerPress = () => {
+    navigation.navigate('CountriesModal');
+  };
+
+  //Save Data
+  const save = () => {
+    if (digit.length > 7) {
+      setTimeout(() => {
+        trigger({
+          digit: digit,
+          areaCode: countryStore.label,
+          countryCode: countryStore.value?.toLocaleLowerCase(),
+          uniqueId: deviceInfoStore?.uniqueId,
+          fingerprint: deviceInfoStore?.fingerprint,
+          latitude: countryStore.latitude,
+          longitude: countryStore.longitude,
+          city_name: countryStore.city_name,
+        });
+      }, 100);
+    } else {
+      Alert.alert('Boş Bırakma', 'Doldur', [{text: 'OK', onPress: () => {}}]);
+    }
+  };
   return (
     <>
       <AppHeader />
@@ -253,6 +255,7 @@ const LoginScreen = ({navigation}: any) => {
             placeholder={t('login:number_placeholder')}
             style={styles.inputStyle}
             value={digit}
+            editable={!loading}
             onChangeText={(masked: string, unmasked: string) => {
               setDigit(unmasked); // you can use the unmasked value as well
             }}
@@ -260,8 +263,8 @@ const LoginScreen = ({navigation}: any) => {
         </View>
         <View style={styles.inputContainer}>
           <AppButton
-            isLoading={isLoading}
-            onPress={onPress}
+            isLoading={loading ? loading : isLoading}
+            onPress={save}
             title={t('login:buttonText')}
           />
         </View>

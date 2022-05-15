@@ -19,9 +19,18 @@ import {batch, useDispatch} from 'react-redux';
 import {COUNTRY_CHANGE_UPDATE} from '../../store/slices/country';
 
 const LoginCountryScreen = ({navigation}: any) => {
+  //Dispatch
   const dispatch = useDispatch();
+
+  //States
   const [loading, setLoading] = useState(true);
   const [countriesState, setCountriesState]: any = useState([]);
+
+  //Refs
+  let ref: any = useRef();
+
+  //UseEffects
+  //SetCountries
   useEffect(() => {
     batch(() => {
       setCountriesState(countries);
@@ -29,10 +38,12 @@ const LoginCountryScreen = ({navigation}: any) => {
     });
   }, [countries]);
 
-  let ref: any = useRef();
+  //Close Page
   const closePress = () => {
     navigation.pop();
   };
+
+  //Search Country
   const onChangeText = (val: any) => {
     if (val.length > 2) {
       const findCountries = countriesState.filter((o: any) =>
@@ -43,6 +54,7 @@ const LoginCountryScreen = ({navigation}: any) => {
       setCountriesState(countries);
     }
   };
+
   return (
     <>
       <AppHeader style={styles.appHeader} />

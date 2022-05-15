@@ -1,6 +1,9 @@
 export const primary = {
   color: '#141E4B',
 };
+export const primary2 = {
+  color: '#122973',
+};
 
 export const secondary = {
   color: '#6B718E',

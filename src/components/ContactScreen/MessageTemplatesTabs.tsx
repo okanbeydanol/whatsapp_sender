@@ -1,36 +1,85 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {Dimensions, StyleSheet, Text, View} from 'react-native';
+import {Alert, Dimensions, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {
-  delivered,
   medium,
   primary,
+  primary2,
   secondary,
-  tertiary,
 } from '../../constants/styles/colors';
 import {Tab, TabView, CheckBox, Icon, Card} from '@rneui/themed';
-import {useLazyGetUserMessageTemplatesQuery} from '../../store/api/userApi';
-import {useDispatch, useSelector} from 'react-redux';
+import {batch, useDispatch, useSelector} from 'react-redux';
 import {getLoginStore} from '../../store/slices/login';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {USER_MESSAGE_TEPMLATES} from '../../constants/typescript/user';
-import {getUserStore} from '../../store/slices/user';
+import {
+  getUserStore,
+  USER_MESSAGES_TEMPLATE_DELETE,
+} from '../../store/slices/user';
+import {useLazyDeleteUserMessageTemplatesQuery} from '../../store/api/userApi';
 
 interface MessageTemplatesProps {
   onChange: (data: USER_MESSAGE_TEPMLATES) => void;
+  selectedMessageTemplateGuid?: string;
+  navigation: any;
 }
-const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
+const MessageTemplatesTabs = ({
+  onChange,
+  selectedMessageTemplateGuid,
+  navigation,
+}: MessageTemplatesProps) => {
+  //Dispatch
   const dispatch = useDispatch();
-  const loginStore = useSelector(getLoginStore);
-  const userStore = useSelector(getUserStore);
-  const [index, setIndex] = React.useState(0);
+
+  //States
+  const [index, setIndex] = useState<number>(0);
   const [selectedData, setSelectedData] =
     useState<USER_MESSAGE_TEPMLATES | null>(null);
 
+  //Selectors
+  const loginStore = useSelector(getLoginStore);
+  const userStore = useSelector(getUserStore);
+
+  //Queries
+  const [triggerDeleteUserTemplate, deleteUserTemplate] =
+    useLazyDeleteUserMessageTemplatesQuery();
+
+  //UseEffects
+  useEffect(() => {
+    if (
+      typeof deleteUserTemplate.data !== 'undefined' &&
+      deleteUserTemplate.isSuccess &&
+      !deleteUserTemplate.isFetching
+    ) {
+      batch(() => {
+        dispatch(USER_MESSAGES_TEMPLATE_DELETE(deleteUserTemplate.data));
+        setSelectedData(null);
+      });
+    }
+  }, [deleteUserTemplate.isFetching, deleteUserTemplate.isSuccess]);
+
+  useEffect(() => {
+    if (
+      userStore.message_templates &&
+      userStore.message_templates.length > 0 &&
+      selectedData == null
+    ) {
+      const findIndex = userStore.message_templates.findIndex(
+        (o: USER_MESSAGE_TEPMLATES) =>
+          o.message_template_guid === selectedMessageTemplateGuid,
+      );
+      if (findIndex !== -1) {
+        setSelectedData(userStore.message_templates[findIndex]);
+      }
+    }
+  }, []);
+
+  //Functions
   const emitChanges = (data: USER_MESSAGE_TEPMLATES) => {
     const cloneData = {
       ...data,
     };
+    console.log('%c data', 'background: #222; color: #bada55', data);
     if (selectedData?.message_template_guid === data.message_template_guid) {
       cloneData.checked = selectedData?.checked ? !selectedData?.checked : true;
       setSelectedData(null);
@@ -40,6 +89,25 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
     }
     onChange && onChange(cloneData);
   };
+
+  const deleteTemplate = (data: USER_MESSAGE_TEPMLATES) => {
+    Alert.alert('Sil!', 'Silmek istediğinize emin misiniz?', [
+      {
+        text: 'Evet',
+        onPress: () => {
+          triggerDeleteUserTemplate({
+            user_guid: loginStore.userGuid,
+            message_template_guid: data.message_template_guid,
+          });
+        },
+      },
+      {
+        text: 'Hayır',
+        onPress: () => {},
+      },
+    ]);
+  };
+
   return (
     <>
       <Tab
@@ -48,32 +116,38 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
         disableIndicator={true}
         indicatorStyle={styles.tabIndicator}
         containerStyle={styles.tabContainerStyle}
-        variant="primary">
+        variant="default">
         <Tab.Item
           title="Text"
-          buttonStyle={{
-            marginTop: 0,
-            zIndex: 99,
-            margin: 0,
-            justifyContent: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            marginLeft: 0,
-            padding: 0,
+          buttonStyle={(active: any) => {
+            return {
+              marginTop: 0,
+              zIndex: 99,
+              margin: 0,
+              justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              marginLeft: 0,
+              padding: 0,
+              backgroundColor: active ? primary.color : primary2.color,
+            };
           }}
           titleStyle={styles.tabTitle}
         />
         <Tab.Item
-          title="Media & Text"
-          buttonStyle={{
-            marginTop: 0,
-            zIndex: 99,
-            margin: 0,
-            justifyContent: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            marginLeft: 0,
-            padding: 0,
+          title="Media"
+          buttonStyle={(active: any) => {
+            return {
+              marginTop: 0,
+              zIndex: 99,
+              margin: 0,
+              justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              marginLeft: 0,
+              padding: 0,
+              backgroundColor: active ? primary.color : primary2.color,
+            };
           }}
           titleStyle={styles.tabTitle}
         />
@@ -92,7 +166,9 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
               enableAutomaticScroll={false}
               enableResetScrollToCoords={false}>
               {userStore.message_templates &&
-              userStore.message_templates.length > 0 ? (
+              userStore.message_templates.filter(
+                (o: USER_MESSAGE_TEPMLATES) => o.type === 'text',
+              ).length > 0 ? (
                 userStore.message_templates.map(
                   (textData: USER_MESSAGE_TEPMLATES, textDataIndex: number) =>
                     textData.type === 'text' && (
@@ -119,12 +195,20 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
                             <Icon
                               name="edit"
                               size={22}
+                              onPress={() => {
+                                navigation.navigate('EditTemplate', {
+                                  template: textData,
+                                });
+                              }}
                               color={medium.color}
                               style={styles.addIconStyle}
                             />
                             <Icon
                               name="delete"
                               size={22}
+                              onPress={() => {
+                                deleteTemplate(textData);
+                              }}
                               color={medium.color}
                               style={styles.addIconStyle}
                             />
@@ -134,9 +218,12 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
                     ),
                 )
               ) : (
-                <Text>
-                  There is no available data! Please add some template using
-                  above plus button!!!
+                <Text
+                  style={{
+                    padding: 16,
+                  }}>
+                  Her hangi bir text mesaj şablonu eklememişsiniz! Lütfen
+                  yukarıdaki artı butonunu kullanarak bir şablon ekleyin.
                 </Text>
               )}
             </KeyboardAwareScrollView>
@@ -155,7 +242,9 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
               enableAutomaticScroll={false}
               enableResetScrollToCoords={false}>
               {userStore.message_templates &&
-              userStore.message_templates.length > 0 ? (
+              userStore.message_templates.filter(
+                (o: USER_MESSAGE_TEPMLATES) => o.type === 'media',
+              ).length > 0 ? (
                 userStore.message_templates.map(
                   (mediaData: any, mediaDataIndex: any) =>
                     mediaData.type === 'media' && (
@@ -182,12 +271,20 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
                             <Icon
                               name="edit"
                               size={22}
+                              onPress={() => {
+                                navigation.navigate('EditTemplate', {
+                                  template: mediaData,
+                                });
+                              }}
                               color={medium.color}
                               style={styles.addIconStyle}
                             />
                             <Icon
                               name="delete"
                               size={22}
+                              onPress={() => {
+                                deleteTemplate(mediaData);
+                              }}
                               color={medium.color}
                               style={styles.addIconStyle}
                             />
@@ -197,9 +294,12 @@ const MessageTemplatesTabs = ({onChange}: MessageTemplatesProps) => {
                     ),
                 )
               ) : (
-                <Text>
-                  There is no available data! Please add some template using
-                  above plus button!!!
+                <Text
+                  style={{
+                    padding: 16,
+                  }}>
+                  Her hangi bir media mesaj şablonu eklememişsiniz! Lütfen
+                  yukarıdaki artı butonunu kullanarak bir şablon ekleyin.
                 </Text>
               )}
             </KeyboardAwareScrollView>
@@ -239,7 +339,7 @@ const styles = StyleSheet.create({
   },
   tabTitle: {
     fontSize: 14,
-    color: primary.color,
+    color: 'white',
     fontFamily: 'Montserrat-SemiBold',
     fontWeight: '600',
     zIndex: 99,

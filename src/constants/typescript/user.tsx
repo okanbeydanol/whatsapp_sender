@@ -76,7 +76,7 @@ export type USER_MESSAGE_TEPMLATES = {
   text: string;
   user_guid: string;
   checked: boolean;
-  images: USER_MESSAGE_TEPMLATE_IMAGES;
+  images: USER_MESSAGE_TEPMLATE_IMAGES[];
   updated_at: string;
   created_at: string;
   deleted_at: string;
@@ -87,6 +87,7 @@ export type USER_MESSAGE_TEPMLATE_IMAGES = {
   message_template_image_guid: string;
   message_template_guid: string;
   image_name: string;
+  type: string;
   updated_at: string;
   created_at: string;
   deleted_at: string;

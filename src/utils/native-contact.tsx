@@ -1,10 +1,11 @@
-import Contacts, {
+import countries from '../assets/countries_details.json';
+import uuid from 'react-native-uuid';
+import {
+  getAll,
   Contact,
   PhoneNumber,
   PostalAddress,
-} from 'react-native-contacts';
-import countries from '../assets/countries_details.json';
-import uuid from 'react-native-uuid';
+} from 'react-native-whatsapp-contacts-manager';
 
 export const organizeContact = (
   userGuid: string,
@@ -27,7 +28,7 @@ export const organizeContact = (
                   fullName: null,
                   contacts: [],
                 };
-                data.fullName = contact.givenName + ' ' + contact.familyName;
+                data.fullName = contact.displayName;
                 data.lastName = contact.familyName;
                 data.name = contact.givenName;
                 data.recordID = +contact.recordID;
@@ -438,7 +439,7 @@ const cleanContacts = async (
 };
 
 const getAllContact = async () => {
-  return await Contacts.getAll();
+  return await getAll();
 };
 
 export const contactsGetDiffForDatabase = async (

@@ -1,37 +1,47 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import React, {useRef, useState} from 'react';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import LoginChatInput from '../../components/login/LoginChatInput';
+import {FlatList, StyleSheet, TouchableOpacity, View} from 'react-native';
+import React, {useState} from 'react';
 import AppHeader from '../../components/Header/AppHeader';
 import {CheckBox, Icon} from '@rneui/themed';
 import {medium, primary, secondary} from '../../constants/styles/colors';
 import {useSelector} from 'react-redux';
 import {DatabaseContactResponse} from '../../utils/native-contact';
 import {getDBContactsStore} from '../../store/slices/dbContacts';
+import {ContactTabScreenProps} from '../../navigation/types';
 
-const ChooseContact = ({navigation, route}: any) => {
-  console.log('%c route', 'background: #222; color: #bada55', route.params);
-  const {selectedContacts} = route.params;
+const ChooseContact = ({
+  navigation,
+  route,
+}: ContactTabScreenProps<'ChooseContact'>) => {
+  //Route Params
+  const {selectedContacts, type} = route.params;
+
+  //Selectors
   const contacts = useSelector(getDBContactsStore);
+
+  //States
   const [selectContacts, setSelectContacts]: any = useState(selectedContacts);
-  let ref: any = useRef();
+
+  //Functions
+  //Close Page
   const closePress = () => {
     navigation.navigate({
-      name: 'CreateList',
+      name: type === 'create' ? 'CreateList' : 'EditList',
       params: {selectedContacts: selectedContacts},
       merge: true,
     });
   };
+
+  //Open type Page with selected contacts
   const savePress = () => {
     navigation.navigate({
-      name: 'CreateList',
+      name: type === 'create' ? 'CreateList' : 'EditList',
       params: {selectedContacts: selectContacts},
       merge: true,
     });
   };
+
+  //Emit Selected Contacts
   const emitChanges = (data: DatabaseContactResponse) => {
-    console.log('%c contacts', 'background: #222; color: #bada55', contacts);
     if (selectContacts) {
       const findIndex = selectContacts.findIndex(
         (o: DatabaseContactResponse) => +o.contact_id === +data.contact_id,
@@ -39,13 +49,52 @@ const ChooseContact = ({navigation, route}: any) => {
       if (findIndex !== -1) {
         selectContacts.splice(findIndex, 1);
         setSelectContacts([...selectContacts]);
-        console.log('%c nedennn', 'background: #222; color: #bada55');
       } else {
         const checked = {...data, checked: true};
         setSelectContacts([...selectContacts, checked]);
       }
     }
   };
+
+  //FlatList Render Item
+  const renderItem = ({item}: {item: DatabaseContactResponse}) => (
+    <View style={styles.tabContentContainer}>
+      <CheckBox
+        title={item.full_name + item.contact_phones.length}
+        checkedIcon="checkbox-outline"
+        uncheckedIcon="square-outline"
+        checked={
+          selectContacts.find(
+            (o: DatabaseContactResponse) => +o.contact_id === +item.contact_id,
+          )
+            ? selectContacts.find(
+                (o: DatabaseContactResponse) =>
+                  +o.contact_id === +item.contact_id,
+              ).checked
+            : false
+        }
+        size={20}
+        iconType="material-community"
+        onPress={() => emitChanges(item)}
+        containerStyle={styles.checkboxContainer}
+        textStyle={styles.checkboxText}
+      />
+      <View style={styles.checkboxEditContainer}>
+        <Icon
+          name="edit"
+          size={22}
+          color={medium.color}
+          style={styles.addIconStyle}
+        />
+        <Icon
+          name="delete"
+          size={22}
+          color={medium.color}
+          style={styles.addIconStyle}
+        />
+      </View>
+    </View>
+  );
   return (
     <>
       <AppHeader style={styles.appHeader} />
@@ -74,61 +123,11 @@ const ChooseContact = ({navigation, route}: any) => {
           </TouchableOpacity>
         </View>
       </View>
-      <LoginChatInput />
-      <KeyboardAwareScrollView
-        keyboardOpeningTime={250}
-        extraScrollHeight={0}
-        extraHeight={0}
-        ref={ref}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="none"
-        showsVerticalScrollIndicator={false}
-        persistentScrollbar={false}
-        contentContainerStyle={[styles.scrollView]}
-        enableAutomaticScroll={false}
-        enableResetScrollToCoords={false}>
-        {contacts.map((key: DatabaseContactResponse, index: any) => (
-          <React.Fragment key={'Fragment' + index}>
-            <View style={styles.tabContentContainer}>
-              <CheckBox
-                title={key.full_name}
-                checkedIcon="checkbox-outline"
-                uncheckedIcon="square-outline"
-                checked={
-                  selectContacts.find(
-                    (o: DatabaseContactResponse) =>
-                      +o.contact_id === +key.contact_id,
-                  )
-                    ? selectContacts.find(
-                        (o: DatabaseContactResponse) =>
-                          +o.contact_id === +key.contact_id,
-                      ).checked
-                    : false
-                }
-                size={20}
-                iconType="material-community"
-                onPress={() => emitChanges(key)}
-                containerStyle={styles.checkboxContainer}
-                textStyle={styles.checkboxText}
-              />
-              <View style={styles.checkboxEditContainer}>
-                <Icon
-                  name="edit"
-                  size={22}
-                  color={medium.color}
-                  style={styles.addIconStyle}
-                />
-                <Icon
-                  name="delete"
-                  size={22}
-                  color={medium.color}
-                  style={styles.addIconStyle}
-                />
-              </View>
-            </View>
-          </React.Fragment>
-        ))}
-      </KeyboardAwareScrollView>
+      <FlatList
+        data={contacts}
+        renderItem={renderItem}
+        keyExtractor={(item: any) => item.id}
+      />
     </>
   );
 };
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: primary.color,
-    height: 40,
+    height: 60,
     justifyContent: 'center',
   },
   appHeader: {

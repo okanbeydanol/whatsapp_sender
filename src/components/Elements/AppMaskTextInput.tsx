@@ -11,6 +11,7 @@ const AppMaskTextInput = ({
   style,
   innerRef,
   value,
+  editable,
 }: any) => {
   const phoneNumberMask = [
     '(',
@@ -36,6 +37,7 @@ const AppMaskTextInput = ({
     mask: phoneNumberMask,
     placeholder: placeholder,
     textContentType: textContentType,
+    editable: editable,
     style: {
       ...styles.textInputStyle,
       ...style,

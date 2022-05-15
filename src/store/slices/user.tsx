@@ -4,7 +4,6 @@ import {
   USER_LISTS,
   USER_MESSAGE_TEPMLATES,
 } from '../../constants/typescript/user';
-import {DatabaseContactResponse} from '../../utils/native-contact';
 
 const initialState: USER = {
   id: null,
@@ -44,16 +43,71 @@ export const userSlice = createSlice<USER, SliceCaseReducers<any>>({
       }
       state.message_templates?.push(action.payload);
     },
+    USER_MESSAGES_TEMPLATE_DELETE: (
+      state: USER,
+      action: PayloadAction<USER_MESSAGE_TEPMLATES>,
+    ) => {
+      if (!action.payload) {
+        return state;
+      }
+      if (state.message_templates) {
+        state.message_templates = [
+          ...state.message_templates?.filter(
+            (o: USER_MESSAGE_TEPMLATES) =>
+              o.message_template_guid !== action.payload.message_template_guid,
+          ),
+        ];
+      }
+    },
+    USER_MESSAGES_TEMPLATE_REPLACE: (
+      state: USER,
+      action: PayloadAction<USER_MESSAGE_TEPMLATES>,
+    ) => {
+      if (!action.payload) {
+        return state;
+      }
+      if (state.message_templates) {
+        const findIndex = state.message_templates.findIndex(
+          (o: USER_MESSAGE_TEPMLATES) =>
+            o.message_template_guid === action.payload.message_template_guid,
+        );
+        if (findIndex !== -1) {
+          state.message_templates[findIndex] = action.payload;
+        }
+      }
+    },
+    USER_MESSAGES_TEMPLATES_REPLACE: (
+      state: USER,
+      action: PayloadAction<USER_MESSAGE_TEPMLATES[]>,
+    ) => {
+      if (!action.payload) {
+        return state;
+      }
+      state.message_templates = action.payload;
+    },
     USER_LISTS_ADD: (state: USER, action: PayloadAction<USER_LISTS>) => {
       if (!action.payload) {
         return state;
       }
       state.lists?.push(action.payload);
     },
+    USER_LISTS_REPLACE: (state: USER, action: PayloadAction<USER_LISTS[]>) => {
+      if (!action.payload) {
+        return state;
+      }
+      state.lists = action.payload;
+    },
   },
 });
-export const {USER_CHANGE, USER_MESSAGES_TEMPLATE_ADD, USER_LISTS_ADD} =
-  userSlice.actions;
+export const {
+  USER_CHANGE,
+  USER_MESSAGES_TEMPLATE_ADD,
+  USER_LISTS_ADD,
+  USER_LISTS_REPLACE,
+  USER_MESSAGES_TEMPLATE_REPLACE,
+  USER_MESSAGES_TEMPLATES_REPLACE,
+  USER_MESSAGES_TEMPLATE_DELETE,
+} = userSlice.actions;
 
 export const getUserStore = (state: {user: USER}) => state.user;
 

@@ -1,13 +1,23 @@
 import {createSlice} from '@reduxjs/toolkit';
 
 export type PermissionsResult = {
-  accessibility: string | null;
-  displayOverOtherApps: string | null;
+  accessibility: boolean | null;
+  displayOverOtherApps: boolean | null;
+  storage: boolean | null;
+  location: boolean | null;
+  camera: boolean | null;
+  contacts: boolean | null;
+  notification: boolean | null;
 };
 
 const initialState: PermissionsResult = {
   accessibility: null,
   displayOverOtherApps: null,
+  storage: null,
+  location: null,
+  camera: null,
+  contacts: null,
+  notification: null,
 };
 
 export const permissionsSlice = createSlice({

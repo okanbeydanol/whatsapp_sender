@@ -5,7 +5,6 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -21,7 +20,7 @@ import {
 } from '../../constants/styles/colors';
 import AppTextInput from '../../components/Elements/AppTextInput';
 import {Icon, CheckBox, Image} from '@rneui/themed';
-import {useLazyCreateUserMessageTemplatesQuery} from '../../store/api/userApi';
+import {useLazyUpdateUserMessageTemplatesQuery} from '../../store/api/userApi';
 import ActionSheet from 'react-native-actions-sheet';
 import {
   ImagePickerResponse,
@@ -34,32 +33,48 @@ import {batch, useDispatch, useSelector} from 'react-redux';
 import {getLoginStore} from '../../store/slices/login';
 import {BASE_API_URL} from '../../constants';
 import {ImageArrayToUpload, uploadImage} from '../../utils/upload-image';
-import {USER_MESSAGES_TEMPLATE_ADD} from '../../store/slices/user';
-import {USER_MESSAGE_TEPMLATES} from '../../constants/typescript/user';
+import {USER_MESSAGES_TEMPLATE_REPLACE} from '../../store/slices/user';
+import {
+  USER_MESSAGE_TEPMLATES,
+  USER_MESSAGE_TEPMLATE_IMAGES,
+} from '../../constants/typescript/user';
 import {TemplateScreenProps} from '../../navigation/types';
 import {copyFile, ExternalDirectoryPath} from 'react-native-fs';
 
-const CreateTemplate = ({
+const EditTemplate = ({
   navigation,
-}: TemplateScreenProps<'CreateTemplate'>) => {
+  route,
+}: TemplateScreenProps<'EditTemplate'>) => {
+  //Props
+  const {template} = route.params;
+  const convert: ImageArrayToUpload[] = [];
+  template.images.forEach((image: USER_MESSAGE_TEPMLATE_IMAGES) => {
+    convert.push({
+      name: image.image_name,
+      path: 'file://' + ExternalDirectoryPath + '/' + image.image_name,
+      type: image.type,
+    });
+  });
+
   //Dispatch
   const dispatch = useDispatch();
 
   //States
-  const [images, setImages] = useState<ImageArrayToUpload[]>([]);
-  const [type, setType] = useState('text');
+  const [title, setTitle] = useState(template.title ? template.title : '');
+  const [text, setText] = useState(template.text ? template.text : '');
+  const [images, setImages] = useState<ImageArrayToUpload[]>(convert);
+  const [type, setType] = useState(template.type);
 
-  //Refs
-  let ref: any = useRef();
-  const actionSheetRef = useRef<ActionSheet>(null);
-  let textRef: any = useRef<TextInput>();
-  let titleRef: any = useRef<TextInput>();
   //Selectors
   const loginStore = useSelector(getLoginStore);
 
   //Queries
-  const [triggerCreateUserTemplate, create_user_template] =
-    useLazyCreateUserMessageTemplatesQuery();
+  const [triggerUpdateUserTemplate, update_user_template] =
+    useLazyUpdateUserMessageTemplatesQuery();
+
+  //Refs
+  let ref: any = useRef();
+  const actionSheetRef = useRef<ActionSheet>(null);
 
   //Effects
   useEffect(() => {
@@ -68,11 +83,11 @@ const CreateTemplate = ({
     }, 200);
   });
 
-  //create_user_template isSuccess
+  //update_user_template isSuccess
   useEffect(() => {
     if (
-      typeof create_user_template.data !== 'undefined' &&
-      create_user_template.isSuccess &&
+      typeof update_user_template.data !== 'undefined' &&
+      update_user_template.isSuccess &&
       images.length > 0 &&
       type === 'media'
     ) {
@@ -84,7 +99,7 @@ const CreateTemplate = ({
           {name: 'user_guid', data: loginStore.userGuid},
           {
             name: 'message_template_guid',
-            data: create_user_template.data.message_template_guid,
+            data: update_user_template.data.message_template_guid,
           },
         ],
         (sent: number, total: number) => {
@@ -99,18 +114,19 @@ const CreateTemplate = ({
           Alert.alert('Hata!', err, [{text: 'OK', onPress: () => {}}]);
         });
     } else {
-      if (create_user_template.data) {
-        updateUser(create_user_template.data);
+      if (update_user_template.data) {
+        updateUser(update_user_template.data);
       }
     }
-  }, [create_user_template.data, create_user_template.isSuccess]);
+  }, [update_user_template.data, update_user_template.isSuccess]);
 
+  //Functions
   //Close Page
   const closePress = () => {
     navigation.pop();
   };
 
-  //Delete Image
+  //Delete Media
   const deleteMedia = (uri: string) => {
     const findIndex = images.findIndex((o: any) => o.path === uri);
     if (findIndex !== -1) {
@@ -140,6 +156,7 @@ const CreateTemplate = ({
     setImages(imagesDatas);
   };
 
+  //ActionSheet Buttons And Callbacks Functions
   const buttonsArray = [
     {
       text: 'Kamera',
@@ -147,6 +164,7 @@ const CreateTemplate = ({
       size: 15,
       color: '#000000',
       handler: async () => {
+        //Launch Camera
         launchCamera(
           {mediaType: 'photo', includeBase64: false},
           async (data: ImagePickerResponse) => {
@@ -217,20 +235,21 @@ const CreateTemplate = ({
   //Dispatch Updated User
   const updateUser = (data: USER_MESSAGE_TEPMLATES) => {
     if (
-      typeof create_user_template.data !== 'undefined' &&
-      create_user_template.isSuccess
+      typeof update_user_template.data !== 'undefined' &&
+      update_user_template.isSuccess
     ) {
-      dispatch(USER_MESSAGES_TEMPLATE_ADD(data));
+      dispatch(USER_MESSAGES_TEMPLATE_REPLACE(data));
       navigation.pop();
     }
   };
 
+  //Begins to save template
   const saveTemplate = async () => {
     if (
-      typeof titleRef.current.value === 'undefined' ||
-      !titleRef.current.value ||
-      (titleRef.current.value && titleRef.current.value.length === 0) ||
-      titleRef.current.value === ''
+      typeof title === 'undefined' ||
+      !title ||
+      (title && title.length === 0) ||
+      title === ''
     ) {
       Alert.alert('Hata!', 'Title boş bırakılamaz!', [
         {text: 'OK', onPress: () => {}},
@@ -247,10 +266,10 @@ const CreateTemplate = ({
       return;
     }
     if (
-      typeof textRef.current.value === 'undefined' ||
-      !textRef.current.value ||
-      (textRef.current.value && textRef.current.value.length === 0) ||
-      textRef.current.value === ''
+      typeof text === 'undefined' ||
+      !text ||
+      (text && text.length === 0) ||
+      text === ''
     ) {
       Alert.alert('Hata!', 'Text boş bırakılamaz!', [
         {text: 'OK', onPress: () => {}},
@@ -258,11 +277,12 @@ const CreateTemplate = ({
       return;
     }
 
-    triggerCreateUserTemplate({
+    triggerUpdateUserTemplate({
       user_guid: loginStore.userGuid,
-      title: titleRef.current.value,
-      text: textRef.current.value,
+      title: title,
+      text: text,
       type: type,
+      message_template_guid: template.message_template_guid,
     });
   };
 
@@ -296,7 +316,7 @@ const CreateTemplate = ({
         enableAutomaticScroll={false}
         enableResetScrollToCoords={false}>
         <View style={styles.listPageTitleWrapper}>
-          <Text style={styles.listPageTitle}>Mesaj Şablonu Oluştur</Text>
+          <Text style={styles.listPageTitle}>Mesaj Şablonunu Düzenle</Text>
         </View>
         <View style={styles.ListTitleWrapper}>
           <Text style={styles.ListTitle}>Şablon Başlığı</Text>
@@ -308,9 +328,9 @@ const CreateTemplate = ({
         </View>
         <View style={styles.ListInputWrapper}>
           <AppTextInput
-            innerRef={titleRef}
-            onChangeText={(text: string) => {
-              titleRef.current.value = text;
+            value={title}
+            onChangeText={(t: string) => {
+              setTitle(t);
             }}
             placeholder="Lütfen şablon başlığı giriniz..."
           />
@@ -334,9 +354,9 @@ const CreateTemplate = ({
               height: 120,
               textAlignVertical: 'top',
             }}
-            innerRef={textRef}
-            onChangeText={(text: string) => {
-              textRef.current.value = text;
+            value={text}
+            onChangeText={(t: string) => {
+              setText(t);
             }}
             placeholder="Lütfen whatsapp'ta göndermek istediğin metin mesajını giriniz..."
           />
@@ -411,36 +431,28 @@ const CreateTemplate = ({
                         marginBottom: 16,
                       }}
                       onPress={() => {
-                        if (imageData.name) {
-                          console.log(
-                            '%c  ExternalDirectoryPath +  + imageData.name',
-                            'background: #222; color: #bada55',
-                            ExternalDirectoryPath + '/' + imageData.name,
-                          );
-                          deleteMedia(imageData.name);
+                        if (imageData.path !== null) {
+                          deleteMedia(imageData.path);
                         }
                       }}>
-                      <Image
-                        source={{
-                          uri:
-                            'file://' +
-                            ExternalDirectoryPath +
-                            '/' +
-                            imageData.name,
-                        }}
-                        containerStyle={{
-                          width: 80,
-                          height: 80,
-                          borderRadius: 12,
-                        }}
-                        PlaceholderContent={<ActivityIndicator />}
-                      />
+                      {imageData.path !== null && (
+                        <Image
+                          source={{
+                            uri: imageData.path,
+                          }}
+                          containerStyle={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 12,
+                          }}
+                          PlaceholderContent={<ActivityIndicator />}
+                        />
+                      )}
                     </TouchableOpacity>
                   )}
                 </React.Fragment>
               ))}
-              {/* (Dimensions.get('window').width / 98) * 2 */}
-              {images.length < 1 && (
+              {images.length < (Dimensions.get('window').width / 98) * 2 && (
                 <TouchableOpacity
                   style={{
                     width: 80,
@@ -474,7 +486,7 @@ const CreateTemplate = ({
   );
 };
 
-export default CreateTemplate;
+export default EditTemplate;
 
 const styles = StyleSheet.create({
   swipeableRightContainer: {
@@ -557,12 +569,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
   },
-  ListTextTitle2: {
-    color: badge.color,
-    fontFamily: 'Montserrat-SemiBold',
-    fontSize: 22,
-    fontWeight: '600',
-  },
   listAddContactListWrapper: {
     alignItems: 'flex-start',
     marginLeft: 16,
@@ -611,6 +617,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginTop: 16,
     marginBottom: 8,
+  },
+  ListTextTitle2: {
+    color: badge.color,
+    fontFamily: 'Montserrat-SemiBold',
+    fontSize: 22,
+    fontWeight: '600',
   },
   ListTextWrapper2: {
     alignItems: 'center',

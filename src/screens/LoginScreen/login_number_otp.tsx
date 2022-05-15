@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Alert, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {batch, useDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {medium, primary, tertiary} from '../../constants/styles/colors';
 import AppHeader from '../../components/Header/AppHeader';
 import AppButton from '../../components/Elements/AppButton';
@@ -15,12 +15,9 @@ import {
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import {useLazyLoginOrCreateQuery} from '../../store/api/loginApi';
-import {USER_CHANGE} from '../../store/slices/user';
 
 const LoginScreenNumberOtp = ({route, navigation}: any) => {
-  const dispatch = useDispatch();
-  const {t, i18n} = useTranslation();
-  const selectedLanguageCode = i18n.language;
+  //Route Params
   const {
     digit,
     areaCode,
@@ -34,12 +31,30 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
     longitude,
     city_name,
   } = route.params;
+
+  //Dispatch
+  const dispatch = useDispatch();
+
+  //UseTranslation
+  const {t, i18n} = useTranslation();
+  const selectedLanguageCode = i18n.language;
+
+  //States
+  const [value, setValue] = useState('');
+  const ref = useBlurOnFulfill({value, cellCount: 6});
+  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
+    value,
+    setValue,
+  });
+
+  //Queries
   const [trigger, {data, isFetching, isError, isLoading, isSuccess, error}] =
     useLazyLoginOrCreateQuery();
-  console.log('%c error', 'background: #222; color: #bada55', error);
+
+  //UseEffects
+  //Check Login or Create
   useEffect(() => {
     if (typeof data !== 'undefined' && isSuccess) {
-      console.log('%c data', 'background: #222; color: #bada55', data);
       if (userGuid !== null && fullname !== null) {
         if (data.freeze_account === null || +data.freeze_account === 0) {
           dispatch(
@@ -62,15 +77,20 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
       }
     }
   }, [data, isSuccess]);
+
+  //Check Login or Create Error
   useEffect(() => {
-    console.log('%c error', 'background: #222; color: #bada55', error);
     if (isError) {
-      Alert.alert('Hata Var', 'OTP GONDERILEMIYOR', [
-        {text: 'OK', onPress: () => {}},
-      ]);
+      Alert.alert(
+        'Hata Var',
+        'Otp Control edilirken bir sorunla karşılaşıldı!',
+        [{text: 'OK', onPress: () => {}}],
+      );
     }
   }, [isError]);
 
+  //Functions
+  //Login or Create
   const complete = () => {
     let errorResult = false;
     if (!value || !value.length) {
@@ -94,31 +114,9 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
         longitude: longitude,
         city_name: city_name,
       });
-      console.log('%c triggerladı', 'background: #222; color: #bada55', {
-        digit: digit,
-        areaCode: areaCode,
-        countryCode: countryCode.toLocaleLowerCase(),
-        uniqueId: uniqueId,
-        fingerprint: fingerprint,
-        latitude: latitude,
-        longitude: longitude,
-        city_name: city_name,
-      });
     }
   };
-  // const changeLanguage = value => {
-  //   i18n
-  //     .changeLanguage(value)
-  //     .then(() => setLanguage(value))
-  //     .catch(err =>
-  // };
 
-  const [value, setValue] = useState('');
-  const ref = useBlurOnFulfill({value, cellCount: 6});
-  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
-    value,
-    setValue,
-  });
   useEffect(() => {
     if (ref) {
       ref.current?.focus();

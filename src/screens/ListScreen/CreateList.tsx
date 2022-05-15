@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   Alert,
-  Dimensions,
   StyleSheet,
   Text,
   TextInput,
@@ -13,7 +12,6 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import AppHeader from '../../components/Header/AppHeader';
 import {light, medium, primary, secondary} from '../../constants/styles/colors';
 import {useDispatch, useSelector} from 'react-redux';
-import {getDBContactsStore} from '../../store/slices/dbContacts';
 import AppTextInput from '../../components/Elements/AppTextInput';
 import {ListItem, Button, Icon} from '@rneui/themed';
 import {useLazyCreateUserListQuery} from '../../store/api/userApi';
@@ -23,26 +21,43 @@ import {USER_MESSAGE_TEPMLATES} from '../../constants/typescript/user';
 import {DatabaseContactResponse} from '../../utils/native-contact';
 import AppButton from '../../components/Elements/AppButton';
 import {USER_LISTS_ADD} from '../../store/slices/user';
-interface CreateListNavigationList {
-  navigation: any;
-  route: {
-    params: {
-      selectedContacts: DatabaseContactResponse[];
-    };
-  };
-}
-const CreateList = ({navigation, route}: CreateListNavigationList) => {
+import {ContactTabScreenProps} from '../../navigation/types';
+const CreateList = ({
+  navigation,
+  route,
+}: ContactTabScreenProps<'CreateList'>) => {
+  //Route Params
   const {selectedContacts} = route.params;
+
+  //Dispatch
   const dispatch = useDispatch();
+
+  //Selectors
   const loginStore = useSelector(getLoginStore);
-  const contacts = useSelector(getDBContactsStore);
-  const [triggerCreateUserList, createUserList] = useLazyCreateUserListQuery();
+
+  //Refs
+  let titleRef: any = useRef<TextInput>();
+
+  //Queries
+  const [trigger_create_user_list, create_user_list] =
+    useLazyCreateUserListQuery();
   const [selectedTemplate, setSelectedTemplate]: any = useState(null);
 
-  let titleRef: any = useRef<TextInput>();
-  const closePress = () => {
-    navigation.pop();
-  };
+  //UseEffects
+
+  //Dispatch create_user_list isSuccess
+  useEffect(() => {
+    if (
+      typeof create_user_list.data !== 'undefined' &&
+      create_user_list.isSuccess
+    ) {
+      dispatch(USER_LISTS_ADD(create_user_list.data));
+      navigation.pop();
+    }
+  }, [create_user_list.isSuccess]);
+
+  //Functions
+  //Create User List
   const saveList = () => {
     if (
       typeof titleRef.current.value === 'undefined' ||
@@ -71,40 +86,33 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
       ]);
       return;
     }
-    console.log(
-      '%c  selectedContacts',
-      'background: #222; color: #bada55',
-      selectedContacts,
-    );
-    triggerCreateUserList({
+    trigger_create_user_list({
       user_guid: loginStore.userGuid,
       title: titleRef.current.value,
       message_template_guid: selectedTemplate.message_template_guid,
-      contacts_ids: selectedContacts.map((o: any) => {
-        return o.id;
+      contacts_ids: selectedContacts.map((o: DatabaseContactResponse) => {
+        return o.contact_id;
       }),
     });
   };
+
+  //Open ChooseContact Page
   const openContact = () => {
-    navigation.navigate('ChooseContact', {selectedContacts: selectedContacts});
+    navigation.navigate('ChooseContact', {
+      selectedContacts: selectedContacts,
+      type: 'create',
+    });
   };
+
+  //Open CreateTemplate Page
   const openCreateTemplate = () => {
     navigation.navigate('CreateTemplate');
   };
-  useEffect(() => {
-    if (
-      typeof createUserList.data !== 'undefined' &&
-      createUserList.isSuccess
-    ) {
-      console.log(
-        '%c createUserList.data',
-        'background: #222; color: #bada55',
-        createUserList.data,
-      );
-      dispatch(USER_LISTS_ADD(createUserList.data));
-      navigation.pop();
-    }
-  }, [createUserList.isSuccess]);
+
+  //Close Page
+  const closePress = () => {
+    navigation.pop();
+  };
 
   return (
     <>
@@ -113,18 +121,23 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
         <TouchableOpacity onPress={closePress}>
           <Icon
             name="close"
-            size={15}
+            size={22}
             color={medium.color}
             style={styles.iconStyle}
           />
         </TouchableOpacity>
       </View>
-      <View style={[styles.scrollView]}>
+      <KeyboardAwareScrollView style={[styles.scrollView]}>
         <View style={styles.listPageTitleWrapper}>
-          <Text style={styles.listPageTitle}>Create a List</Text>
+          <Text style={styles.listPageTitle}>Gönderilecek Liste Oluştur.</Text>
         </View>
         <View style={styles.ListTitleWrapper}>
-          <Text style={styles.ListTitle}>List Title</Text>
+          <Text style={styles.ListTitle}>Liste Başlığı</Text>
+        </View>
+        <View>
+          <Text style={styles.ListTitleDesc}>
+            (Lütfen liste için düzgün bir başlık giriniz!)
+          </Text>
         </View>
         <View style={styles.ListInputWrapper}>
           <AppTextInput
@@ -132,11 +145,12 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
             onChangeText={(text: string) => {
               titleRef.current.value = text;
             }}
-            placeholder="Please enter a list title..."
+            placeholder="Lütfen liste başlığı giriniz..."
           />
         </View>
         <View style={styles.listMessageTemplateWrapper}>
-          <Text style={styles.listMessageTemplate}>Message Templates</Text>
+          <Text style={styles.listMessageTemplate}>Mesaj Şablonları</Text>
+
           <TouchableOpacity onPress={openCreateTemplate} activeOpacity={0.8}>
             <Icon
               name="add"
@@ -146,8 +160,14 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
             />
           </TouchableOpacity>
         </View>
+        <View>
+          <Text style={styles.ListTitleDesc}>
+            (Hazırladığız şablonları aşağıdan seçebilirsiniz!)
+          </Text>
+        </View>
         <View style={styles.listMessageTemplatesWrapper}>
           <MessageTemplatesTabs
+            navigation={navigation}
             onChange={(data: USER_MESSAGE_TEPMLATES) => {
               if (data.checked) {
                 setSelectedTemplate(data);
@@ -158,7 +178,7 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
           />
         </View>
         <View style={styles.listAddContactWrapper}>
-          <Text style={styles.listAddContact}>Add Contact</Text>
+          <Text style={styles.listAddContact}>Kişi Ekle</Text>
           <TouchableOpacity onPress={openContact} activeOpacity={0.8}>
             <Icon
               name="add"
@@ -168,10 +188,16 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
             />
           </TouchableOpacity>
         </View>
+        <View>
+          <Text style={styles.ListTitleDesc}>
+            (Artı butonuna tıklayarak rehberinizden kişiler seçerek
+            ekleyebilirsiniz!)
+          </Text>
+        </View>
         {selectedContacts.length === 0 && (
           <View style={styles.listAddContactEmptyWrapper}>
             <Text style={styles.listAddContactEmpty}>
-              There is no added contact
+              Daha Herhangi bir kişi eklemediniz!
             </Text>
           </View>
         )}
@@ -190,14 +216,6 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
                     <ListItem.Swipeable
                       leftStyle={styles.swipeableLeftContainer}
                       rightStyle={styles.swipeableRightContainer}
-                      leftContent={reset => (
-                        <Button
-                          title="Info"
-                          onPress={() => reset()}
-                          icon={{name: 'info', color: 'white'}}
-                          buttonStyle={{minHeight: '100%'}}
-                        />
-                      )}
                       rightContent={reset => (
                         <Button
                           title="Delete"
@@ -222,10 +240,16 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
           </KeyboardAwareScrollView>
         </View>
 
-        <View style={{width: '100%', paddingStart: 16, marginTop: 16}}>
+        <View
+          style={{
+            width: '100%',
+            paddingStart: 16,
+            marginTop: 16,
+            marginBottom: 16,
+          }}>
           <AppButton onPress={saveList} title="Save" />
         </View>
-      </View>
+      </KeyboardAwareScrollView>
     </>
   );
 };
@@ -233,12 +257,8 @@ const CreateList = ({navigation, route}: CreateListNavigationList) => {
 export default CreateList;
 
 const styles = StyleSheet.create({
-  swipeableRightContainer: {
-    paddingRight: 16,
-  },
-  swipeableLeftContainer: {
-    paddingLeft: 16,
-  },
+  swipeableRightContainer: {},
+  swipeableLeftContainer: {},
   scrollView: {
     paddingRight: 15,
     paddingLeft: 15,
@@ -292,6 +312,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
   },
+  ListTitleDesc: {
+    color: secondary.color,
+    fontFamily: 'Montserrat-Medium',
+    fontSize: 12,
+    fontWeight: '500',
+    paddingLeft: 16,
+    marginBottom: 8,
+  },
   listAddContactListWrapper: {
     alignItems: 'flex-start',
     marginLeft: 16,
@@ -343,7 +371,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: primary.color,
-    height: 40,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
