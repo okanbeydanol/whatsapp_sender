@@ -6613,10 +6613,10 @@ react-moment@^1.1.2:
   resolved "https://registry.npmjs.org/react-moment/-/react-moment-1.1.2.tgz"
   integrity sha512-lfb+shYXI2tXlQrNUpNr05/1D/kzFj8Isbfp89DQrpZk0fs2JIAnLHWETR0hQS9zvtzwLWlVv0wKLffbue5HoA==
 
-react-native-accessibility-manager-plugin@0.1.6:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/react-native-accessibility-manager-plugin/-/react-native-accessibility-manager-plugin-0.1.6.tgz#fe3353eac077156b483359c85b28b16617ade9aa"
-  integrity sha512-DMeVvbIq2d5v+hOe+20Uxxz2q+ck55qblVy+RlOOpISwwhRYh75JtlzVNGE+rOOee++CQwGzfoZbWkWSrgQVsw==
+react-native-accessibility-manager-plugin@0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/react-native-accessibility-manager-plugin/-/react-native-accessibility-manager-plugin-0.1.8.tgz#f9b6350e1e5be08e218f11dcb7b8e0c63b9ca26a"
+  integrity sha512-8oP+RQo9krPn1b8/Vq1C+oRTq9okGNM1z+CkfYEyd4MQggvh5QCQ2uDui3z84F4pvxSu19h1k3+wOOjW2etexg==
 
 react-native-action-button-warnings-fixed@^2.9.2:
   version "2.9.2"
@@ -6818,10 +6818,10 @@ react-native-vector-icons@^9.1.0:
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
-react-native-whatsapp-contacts-manager@0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/react-native-whatsapp-contacts-manager/-/react-native-whatsapp-contacts-manager-0.1.4.tgz#ec412746c1d629a6d03952ecf5571deb21abd68d"
-  integrity sha512-1JlEujXjlIw0SYxs+xWgOB/j0uSiIs9jdm28CFrfkWQIp1ZhoWzfCxF8auvLfrDAAd1tF3r9rftl+zSWJSdp5A==
+react-native-whatsapp-contacts-manager@0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/react-native-whatsapp-contacts-manager/-/react-native-whatsapp-contacts-manager-0.1.9.tgz#e38bdff9f86268808f5bf4340af1d61c19f25e5b"
+  integrity sha512-m8DJzhZTzepZ4j/c+XqmA29kYbAJXdT6oBl5rsmeuMO4ovCRZg7GZ4v0di/C5lMVQ5yd/+eHF0MwPW86qTNyFw==
 
 react-native@0.67.4:
   version "0.67.4"

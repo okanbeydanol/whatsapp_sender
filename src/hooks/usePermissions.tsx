@@ -150,6 +150,7 @@ const usePermissions = () => {
         contacts: contacts,
         storage: storage,
         notification: notification,
+        ...extraData,
       }),
     );
   };

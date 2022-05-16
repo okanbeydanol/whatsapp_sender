@@ -141,7 +141,15 @@ export default function Navigation() {
         PermissionsAndroid.PERMISSIONS.CAMERA,
       );
       const notification = await (await checkNotifications()).status;
-
+      console.log('%c kjhasdjfhsad', 'background: #222; color: #bada55', {
+        accessibility: accessibility,
+        displayOverOtherApps: displayOverOtherApps,
+        location: location,
+        contacts: contacts,
+        camera: camera,
+        storage: storage,
+        notification: notification === 'granted' ? true : false,
+      });
       //Store Permissions
       storeData('[permissions]', {
         accessibility: accessibility,

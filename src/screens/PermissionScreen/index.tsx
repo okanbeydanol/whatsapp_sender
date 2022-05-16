@@ -15,6 +15,7 @@ import {
   canDisplayOverOtherApps,
   isAccessibilityOn,
   openAccessibilitySettings,
+  openAutoStartSettings,
   openDisplayOverOtherAppsPermissionSettings,
 } from 'react-native-accessibility-manager-plugin';
 import {checkNotifications} from 'react-native-permissions';
@@ -35,7 +36,11 @@ const PermissionScreen = () => {
 
   //Selectors
   const permissions = useSelector(getPermissionsStore);
-
+  console.log(
+    '%c permissions2222',
+    'background: #222; color: #bada55',
+    permissions,
+  );
   //Refs
   let ref: any = useRef();
 
@@ -49,7 +54,7 @@ const PermissionScreen = () => {
           if (!permissions.accessibility) {
             ref.current.scrollTo(1, true);
           } else {
-            ref.current.scrollTo(2, true);
+            ref.current.scrollTo(3, true);
           }
           const accessibilityOn = await isAccessibilityOn();
           const displayOverOtherApps = await canDisplayOverOtherApps();
@@ -98,9 +103,9 @@ const PermissionScreen = () => {
   useEffect(() => {
     if (ref.current) {
       if (!permissions.accessibility) {
-        ref.current.scrollTo(1, true);
-      } else {
-        ref.current.scrollTo(2, true);
+        ref.current?.scrollTo(1, true);
+      } else if (!permissions.displayOverOtherApps) {
+        ref.current?.scrollTo(3, true);
       }
     }
   }, [ref]);
@@ -192,25 +197,27 @@ const PermissionScreen = () => {
           source={require('../../assets/images/permissiontime.png')}
         />
         <Text style={styles.text}>
-          Uygulamayı arkaplanda çalıştırabilmek için ve gerektiği zamanda
-          uygulamayı uyandırabilmemiz için gerekli olan bir izin.
+          Uygulamanın Whatsapp'ı uygulamasını açıp mesajı gönderebilmesi için
+          gereken bir izin. (Accessibility Service)
         </Text>
         <View style={styles.infoContainer}>
           <View style={styles.buttonContainer}>
-            <Text style={styles.permissionText}>Permission: </Text>
+            <Text style={styles.permissionText}>İzin Statusu: </Text>
             {permissions.accessibility ? (
-              <Text style={styles.permissionStatusAccess}>Denied</Text>
+              <Text style={styles.permissionStatusAccess}>Başarılı</Text>
             ) : (
-              <Text style={styles.permissionDenied}>Denied</Text>
+              <Text style={styles.permissionDenied}>Başarısız</Text>
             )}
           </View>
           {permissions.accessibility ? (
             <TouchableOpacity
               style={styles.openBtn}
               onPress={() => {
-                ref.current.scrollTo(2, true);
+                if (ref.current) {
+                  ref.current?.scrollTo(2, true);
+                }
               }}>
-              <Text style={styles.openBtnText}>Next Permission</Text>
+              <Text style={styles.openBtnText}>Sıradaki İzin!</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -224,9 +231,42 @@ const PermissionScreen = () => {
                   );
                 });
               }}>
-              <Text style={styles.openBtnText}>Open Settings</Text>
+              <Text style={styles.openBtnText}>Ayarları Aç!</Text>
             </TouchableOpacity>
           )}
+        </View>
+      </View>
+      <View style={styles.slide1}>
+        <Image
+          width={Dimensions.get('window').width - 180}
+          style={styles.dMedia}
+          source={require('../../assets/images/autostart.png')}
+        />
+        <Text style={styles.text}>
+          Uygulamanın Whatsapp'ı uygulamasını açıp mesajı gönderebilmesi için
+          kullandığımız servisin hata vermemesi için açmanız önerilir. Aksi
+          halde sürekli izin yenileme sayfası açılabilir. (Otomatik Başlatma)
+          Eğer İzin sayfası açılmıyorsa bir sonraki izine geçebilirsiniz.
+        </Text>
+        <View style={styles.infoContainer}>
+          <TouchableOpacity
+            style={styles.openBtn}
+            onPress={() => {
+              if (ref.current) {
+                ref.current?.scrollTo(3, true);
+              }
+            }}>
+            <Text style={styles.openBtnText}>Sıradaki İzin!</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.openBtn}
+            onPress={() => {
+              openAutoStartSettings().catch((err: any) => {
+                console.log('%c err', 'background: #222; color: #bada55', err);
+              });
+            }}>
+            <Text style={styles.openBtnText}>Ayarları Aç!</Text>
+          </TouchableOpacity>
         </View>
       </View>
       <View style={styles.slide2}>
@@ -236,33 +276,44 @@ const PermissionScreen = () => {
           source={require('../../assets/images/permissonsent.png')}
         />
         <Text style={styles.text}>
-          Uygulamanın whatsapp uygulamasını açıp mesajı gönderebilmesi için
-          gereken bir izin
+          Gerektiği zamanda Whatsapp ve bu uygulama arasında geçiş yapabilmemiz
+          için ve uygulamayı arkaplanda çalıştırabilmek gerekli olan bir izin.
+          (Diğer Uygulamaların üstünde göster)
         </Text>
         <View style={styles.infoContainer}>
           <View style={styles.buttonContainer}>
-            <Text style={styles.permissionText}>Permission: </Text>
+            <Text style={styles.permissionText}>İzin Status: </Text>
             {permissions.displayOverOtherApps ? (
-              <Text style={styles.permissionStatusAccess}>Granted</Text>
+              <Text style={styles.permissionStatusAccess}>Başarılı</Text>
             ) : (
-              <Text style={styles.permissionDenied}>Denied</Text>
+              <Text style={styles.permissionDenied}>Başarısız</Text>
             )}
           </View>
           {permissions.displayOverOtherApps ? (
             <TouchableOpacity
               style={styles.openBtn}
               onPress={() => {
-                ref.current.scrollTo(1, true);
+                if (ref.current) {
+                  ref.current?.scrollTo(1, true);
+                }
               }}>
-              <Text style={styles.openBtnText}>Next Permission</Text>
+              <Text style={styles.openBtnText}>Sıradaki İzin!</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={styles.openBtn}
               onPress={() => {
-                openDisplayOverOtherAppsPermissionSettings();
+                openDisplayOverOtherAppsPermissionSettings().catch(
+                  (err: any) => {
+                    console.log(
+                      '%c err',
+                      'background: #222; color: #bada55',
+                      err,
+                    );
+                  },
+                );
               }}>
-              <Text style={styles.openBtnText}>Open Settings</Text>
+              <Text style={styles.openBtnText}>Ayarları Aç!</Text>
             </TouchableOpacity>
           )}
         </View>
