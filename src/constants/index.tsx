@@ -29,4 +29,5 @@ export const USER_UPDATE_PROFILE = 'user_update_profile';
 
 export const TOMTOMAPIKEY = 'JTI7wt416lpkGgdziAKNirBTCsyyAXnK';
 
-export const BASE_API_URL = 'http://192.168.1.20:8000/api/';
+export const BASE_API_URL = 'https://okanbeydanol.com/api/';
+export const BASE_URL = 'https://okanbeydanol.com/';

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.17.1",
+    "@react-native-community/checkbox": "^0.5.12",
     "@react-native-community/cli": "^7.0.3",
     "@react-native-community/netinfo": "^8.2.0",
     "@react-native-firebase/analytics": "^14.9.1",
@@ -66,7 +67,8 @@
     "react-native-uuid": "^2.0.1",
     "react-native-vector-icons": "^9.1.0",
     "react-native-whatsapp-contacts-manager": "0.1.9",
-    "react-redux": "^7.2.6"
+    "react-redux": "^7.2.6",
+    "rn-tourguide": "^3.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

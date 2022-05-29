@@ -28,18 +28,18 @@ interface CreateListScreenProps {
   selectedContacts: DatabaseContactResponse[];
 }
 interface ContactScreenProps {
-  selectedContacts: DatabaseContactResponse[];
   type?: string;
   list: USER_LISTS;
+  selectedContacts: DatabaseContactResponse[];
 }
 interface EditListScreenProps {
-  selectedContacts: DatabaseContactResponse[];
   type?: string;
   list: USER_LISTS;
+  selectedContacts: DatabaseContactResponse[];
 }
 interface ChooseContactScreenProps {
-  selectedContacts: DatabaseContactResponse[];
   type?: string;
+  selectedContacts: DatabaseContactResponse[];
 }
 interface StartWhatsappSenderScreenProps {
   list: USER_LISTS;

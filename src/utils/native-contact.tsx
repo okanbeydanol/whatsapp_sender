@@ -521,7 +521,6 @@ export type DatabaseContactResponse = {
   user_guid: string;
   name: string;
   full_name: string;
-  active: number;
   checked: boolean | undefined;
   last_name: string;
   contact_phones: DatabaseContactPhonesResponse[];

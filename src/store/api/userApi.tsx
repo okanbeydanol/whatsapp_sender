@@ -39,6 +39,13 @@ export const userApi = createApi({
         body: patch,
       }),
     }),
+    userContactPhoneStatusChange: build.query<DatabaseContactResponse[], any>({
+      query: ({...patch}) => ({
+        url: 'user_contact_phone_status_change',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
     createUserList: build.query<DatabaseContactResponse, any>({
       query: ({...patch}) => ({
         url: 'user_list_create',
@@ -109,6 +116,7 @@ export const {
   useLazyCheckUserPacketQuery,
   useLazyGetUserContactsQuery,
   useLazyUpdateUserContactsQuery,
+  useLazyUserContactPhoneStatusChangeQuery,
   useLazyCreateUserListQuery,
   useLazyUpdateUserListQuery,
   useLazyRemoveUserListQuery,

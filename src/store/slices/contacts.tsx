@@ -1,9 +1,12 @@
-import {createSlice} from '@reduxjs/toolkit';
+import {createSlice, SliceCaseReducers} from '@reduxjs/toolkit';
 import {ContactResponse} from '../../utils/native-contact';
 
 const initialState: ContactResponse[] = [];
 
-export const contactsSlice = createSlice({
+export const contactsSlice = createSlice<
+  ContactResponse[],
+  SliceCaseReducers<any>
+>({
   name: 'contacts',
   initialState,
   reducers: {

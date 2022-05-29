@@ -135,8 +135,10 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
       update_contacts.isSuccess &&
       userStore.user_guid !== null
     ) {
-      setLoading(false);
-      dispatch(DB_CONTACTS_CHANGE(update_contacts.data));
+      batch(() => {
+        setLoading(false);
+        dispatch(DB_CONTACTS_CHANGE(update_contacts.data));
+      });
     }
   }, [update_contacts.isSuccess]);
 
@@ -171,7 +173,15 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
             userStore.country_info?.iso2,
             userStore.phone_number,
           );
-          dispatch(CONTACTS_CHANGE(contacts.contacts));
+
+          if (contacts.contacts.length > 0) {
+            console.log('%c 111111', 'background: #222; color: #bada55');
+            batch(() => {
+              dispatch(CONTACTS_CHANGE(contacts.contacts));
+            });
+          } else {
+            setLoading(false);
+          }
         }
       }, 10);
     }
@@ -190,6 +200,11 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
           typeof update_contacts.data === 'undefined' &&
           typeof get_contacts.data !== 'undefined'
         ) {
+          console.log(
+            '%c conassdfasdfasdfasdfdfatacts',
+            'background: #222; color: #bada55',
+            get_contacts.data,
+          );
           const {contactsToUpload} = await contactsGetDiffForDatabase(
             get_contacts.data,
             contactsStore,
@@ -220,6 +235,7 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
   //Get contacts error
   useEffect(() => {
     if (get_contacts.isError) {
+      console.log('%c error1', 'background: #222; color: #bada55', error);
       Alert.alert('Hata Var', 'Rehberin getirelemiyor!', [
         {text: 'OK', onPress: () => {}},
       ]);
@@ -229,6 +245,7 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
   //Get user error
   useEffect(() => {
     if (isError && error) {
+      console.log('%c  error2', 'background: #222; color: #bada55', error);
       Alert.alert('Hata Var', 'Kullanıcı bilgileri çekilemiyor!', [
         {text: 'OK', onPress: () => {}},
       ]);
@@ -303,14 +320,14 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
           activeOpacity={0.8}>
           <Icon
             name="menu"
-            size={28}
+            size={22}
             type="ionicon"
             color={medium.color}
             style={styles.addIconStyle}
           />
         </TouchableOpacity>
         <View>
-          <Text style={styles.appHeaderText}>Gönderilecek Listeler</Text>
+          <Text style={styles.appHeaderText}>Whatsapp Gönderme Listeleri</Text>
         </View>
       </View>
       {loading ? (
@@ -365,7 +382,7 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
                         activeOpacity={0.8}>
                         <Icon
                           name="trash"
-                          size={28}
+                          size={22}
                           color={badge.color}
                           type="ionicon"
                           style={styles.addIconStyle}
@@ -378,7 +395,7 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
                         activeOpacity={0.8}>
                         <Icon
                           name="pencil"
-                          size={28}
+                          size={22}
                           type="ionicon"
                           color={medium.color}
                           style={styles.addIconStyle}
@@ -392,7 +409,7 @@ const ListScreen = ({navigation}: ContactTabScreenProps<'ContactScreen'>) => {
                         <Icon
                           name="play"
                           type="ionicon"
-                          size={34}
+                          size={26}
                           color={green.color}
                           style={styles.addIconStyle}
                         />
@@ -428,7 +445,7 @@ const styles = StyleSheet.create({
   context: {
     color: medium.color,
     fontFamily: 'Montserrat-Medium',
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '500',
   },
   cardWrapper: {marginRight: 32},
@@ -447,8 +464,9 @@ const styles = StyleSheet.create({
   title: {
     color: secondary.color,
     fontFamily: 'Montserrat-SemiBold',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
+    width: 128,
   },
   appHeaderText: {
     fontFamily: 'Montserrat-Medium',
@@ -456,7 +474,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: tertiary.color,
   },
-  scrollView: {},
+  scrollView: {
+    paddingBottom: 64,
+  },
   addIconStyle: {
     marginRight: 16,
   },

@@ -175,7 +175,15 @@ const MessageTemplatesTabs = ({
                       <React.Fragment key={'Fragment' + textDataIndex}>
                         <View style={styles.tabContentContainer}>
                           <CheckBox
-                            title={textData.title}
+                            title={
+                              textData.title.length >
+                              Dimensions.get('screen').width / 32
+                                ? textData.title.substring(
+                                    0,
+                                    Dimensions.get('screen').width / 32,
+                                  ) + '...'
+                                : textData.title
+                            }
                             checkedIcon="check-circle-outline"
                             uncheckedIcon="checkbox-blank-circle-outline"
                             checked={
@@ -369,5 +377,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
   },
-  checkboxEditContainer: {display: 'flex', flexDirection: 'row'},
+  checkboxEditContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginLeft: 'auto',
+  },
 });

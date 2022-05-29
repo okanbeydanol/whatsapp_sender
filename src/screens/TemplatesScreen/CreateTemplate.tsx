@@ -494,6 +494,7 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingRight: 15,
     paddingLeft: 15,
+    paddingBottom: 16,
   },
   tabsContainerStyle: {
     paddingBottom: 16,

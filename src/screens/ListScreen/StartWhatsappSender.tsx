@@ -87,7 +87,6 @@ const StartWhatsappSender = ({
 }: ContactTabScreenProps<'StartWhatsappSender'>) => {
   //Route Params
   const {list} = route.params;
-
   //States
   const [listData, setListData] = useState<USER_LISTS_STARTER>(list);
   const [currentContactPhone, setCurrentContactPhone] =
@@ -100,10 +99,16 @@ const StartWhatsappSender = ({
   //Whatsapp Sender Brain
   useEffect(() => {
     if (listData.contacts.length > 0 && currentContact !== null) {
+      console.log(
+        '%c burda1',
+        'background: #222; color: #bada55',
+        currentContact,
+      );
+
       setTimeout(() => {
         if (
           typeof currentContact.expanded === 'undefined' ||
-          currentContact.expanded === 0
+          +currentContact.expanded === 0
         ) {
           //Kullanıcıyı expanded hale getiriyoruz.
           const findIndex = listData.contacts.findIndex(
@@ -131,6 +136,8 @@ const StartWhatsappSender = ({
           currentContact.contact_info.status === CONTACTS_STATUS.PENDING &&
           currentContact.expanded === 1
         ) {
+          console.log('%c burda2', 'background: #222; color: #bada55');
+
           //Kullanıcıyı başlatıyoruz.
           const findIndex = listData.contacts.findIndex(
             (o: USER_LIST_CONTACTS_STARTER) =>
@@ -166,9 +173,14 @@ const StartWhatsappSender = ({
             const firstPhoneIndex =
               currentContact.contact_info.contact_phones.findIndex(
                 (o: DatabaseContactPhonesResponse) =>
-                  o.status === CONTACTS_PHONES_STATUS.PENDING,
+                  o.status === CONTACTS_PHONES_STATUS.PENDING &&
+                  +o.active === 1,
               );
-
+            console.log(
+              '%c findIndexxxx',
+              'background: #222; color: #bada55',
+              firstPhoneIndex,
+            );
             if (firstPhoneIndex !== -1) {
               const currentPhoneStarted = {
                 ...currentContact.contact_info.contact_phones[firstPhoneIndex],
@@ -192,11 +204,51 @@ const StartWhatsappSender = ({
                   ],
                 );
               });
+            } else {
+              const firstDisablePhoneIndex =
+                currentContact.contact_info.contact_phones.findIndex(
+                  (o: DatabaseContactPhonesResponse) =>
+                    o.status === CONTACTS_PHONES_STATUS.PENDING &&
+                    +o.active === 0,
+                );
+              console.log('%c burda1', 'background: #222; color: #bada55');
+
+              if (firstDisablePhoneIndex !== -1) {
+                const currentPhoneStarted = {
+                  ...currentContact.contact_info.contact_phones[
+                    firstDisablePhoneIndex
+                  ],
+                  status: CONTACTS_PHONES_STATUS.CANCELLED,
+                };
+
+                const contact_phones = [
+                  ...listData.contacts[findIndex].contact_info.contact_phones,
+                ];
+                contact_phones[firstDisablePhoneIndex] = {
+                  ...currentPhoneStarted,
+                };
+
+                const contacts = [...listData.contacts];
+                contacts[findIndex].contact_info.contact_phones =
+                  contact_phones;
+                batch(() => {
+                  setListData({...listData, contacts: [...contacts]});
+                  setCurrentContact(contacts[findIndex]);
+                  setCurrentContactPhone(
+                    contacts[findIndex].contact_info.contact_phones[
+                      firstDisablePhoneIndex
+                    ],
+                  );
+                });
+                console.log('%c burda', 'background: #222; color: #bada55');
+              }
             }
           }
         }
       }, 200);
     } else if (listData.contacts.length > 0 && currentContact === null) {
+      console.log('%c burda3', 'background: #222; color: #bada55');
+
       //Pending kullanıcıyı seçiyoruz.
       const findIndex = listData.contacts.findIndex(
         (o: USER_LIST_CONTACTS_STARTER) =>
@@ -204,6 +256,8 @@ const StartWhatsappSender = ({
       );
       if (findIndex !== -1) {
         setCurrentContact(listData.contacts[findIndex]);
+      } else {
+        //Pending kulllanıcı yok bitti.
       }
     }
   }, [listData, currentContact]);
@@ -293,7 +347,7 @@ const StartWhatsappSender = ({
     }
   }, [currentContactPhone]);
 
-  //Send Whatsapp and listen whatsapp response and complete current contact
+  //Send TO Whatsapp and listen to the whatsapp response and complete current contact
   const startWhatsappSend = () => {
     if (
       currentContactPhone !== null &&
@@ -430,7 +484,7 @@ const StartWhatsappSender = ({
                   ? item.contact_info.status === CONTACTS_STATUS.PENDING
                     ? 'Bekliyor'
                     : item.contact_info.status === CONTACTS_STATUS.CANCELLED
-                    ? 'İptal Edildi'
+                    ? 'İptal Edildi! Statüsünü pasif hale getirmişsiniz.'
                     : item.contact_info.status === CONTACTS_STATUS.COMPLETED
                     ? 'Gönderildi'
                     : item.contact_info.status === CONTACTS_STATUS.FAILED
@@ -495,7 +549,7 @@ const StartWhatsappSender = ({
                     ? l.status === CONTACTS_PHONES_STATUS.PENDING
                       ? 'Bekliyor'
                       : l.status === CONTACTS_PHONES_STATUS.CANCELLED
-                      ? 'İptal Edildi'
+                      ? 'İptal Edildi!\nNumarayı pasif hale getirmişsiniz.'
                       : l.status === CONTACTS_PHONES_STATUS.COMPLETED
                       ? 'Gönderildi'
                       : l.status === CONTACTS_PHONES_STATUS.FAILED

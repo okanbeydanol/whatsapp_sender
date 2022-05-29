@@ -15,6 +15,7 @@ import {
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import {useLazyLoginOrCreateQuery} from '../../store/api/loginApi';
+import OneSignal, {NotificationReceivedEvent} from 'react-native-onesignal';
 
 const LoginScreenNumberOtp = ({route, navigation}: any) => {
   //Route Params
@@ -88,6 +89,18 @@ const LoginScreenNumberOtp = ({route, navigation}: any) => {
       );
     }
   }, [isError]);
+
+  useEffect(() => {
+    OneSignal.setNotificationWillShowInForegroundHandler(
+      (event: NotificationReceivedEvent) => {
+        const body = event.getNotification().body;
+        const otpCode = body.split('Your otp code: ')[1];
+        if (otpCode && otpCode.length === 6) {
+          setValue(otpCode);
+        }
+      },
+    );
+  }, []);
 
   //Functions
   //Login or Create

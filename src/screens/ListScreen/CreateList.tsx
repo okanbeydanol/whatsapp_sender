@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   Alert,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -98,6 +99,11 @@ const CreateList = ({
 
   //Open ChooseContact Page
   const openContact = () => {
+    console.log(
+      '%c selectedContacts',
+      'background: #222; color: #bada55',
+      selectedContacts,
+    );
     navigation.navigate('ChooseContact', {
       selectedContacts: selectedContacts,
       type: 'create',
@@ -127,7 +133,7 @@ const CreateList = ({
           />
         </TouchableOpacity>
       </View>
-      <KeyboardAwareScrollView style={[styles.scrollView]}>
+      <ScrollView style={[styles.scrollView]}>
         <View style={styles.listPageTitleWrapper}>
           <Text style={styles.listPageTitle}>Gönderilecek Liste Oluştur.</Text>
         </View>
@@ -204,6 +210,7 @@ const CreateList = ({
 
         <View style={{height: 240}}>
           <KeyboardAwareScrollView
+            nestedScrollEnabled={true}
             contentContainerStyle={[styles.scrollViewContact]}>
             {selectedContacts.map(
               (key: DatabaseContactResponse, index: any) => (
@@ -249,7 +256,7 @@ const CreateList = ({
           }}>
           <AppButton onPress={saveList} title="Save" />
         </View>
-      </KeyboardAwareScrollView>
+      </ScrollView>
     </>
   );
 };

@@ -1,5 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import AppHeader from '../../components/Header/AppHeader';
@@ -144,7 +151,7 @@ const EditList = ({navigation, route}: ContactTabScreenProps<'EditList'>) => {
           />
         </TouchableOpacity>
       </View>
-      <View style={[styles.scrollView]}>
+      <ScrollView style={[styles.scrollView]}>
         <View style={styles.listPageTitleWrapper}>
           <Text style={styles.listPageTitle}>Listeyi Düzenle</Text>
         </View>
@@ -221,6 +228,7 @@ const EditList = ({navigation, route}: ContactTabScreenProps<'EditList'>) => {
 
         <View style={{height: 240}}>
           <KeyboardAwareScrollView
+            nestedScrollEnabled={true}
             contentContainerStyle={[styles.scrollViewContact]}>
             {selectContacts &&
               selectContacts.map((key: DatabaseContactResponse, index: any) => (
@@ -259,10 +267,16 @@ const EditList = ({navigation, route}: ContactTabScreenProps<'EditList'>) => {
           </KeyboardAwareScrollView>
         </View>
 
-        <View style={{width: '100%', paddingStart: 16, marginTop: 16}}>
+        <View
+          style={{
+            width: '100%',
+            paddingStart: 16,
+            paddingTop: 16,
+            paddingBottom: 16,
+          }}>
           <AppButton onPress={saveList} title="Save" />
         </View>
-      </View>
+      </ScrollView>
     </>
   );
 };

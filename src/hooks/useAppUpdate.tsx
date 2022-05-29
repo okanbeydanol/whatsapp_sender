@@ -1,8 +1,9 @@
 /* eslint-disable radix */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect} from 'react';
-import {Alert} from 'react-native';
+import {Alert, Linking} from 'react-native';
 import {getVersion} from 'react-native-device-info';
+import {BASE_URL} from '../constants';
 import {useLazyGetAppVersionQuery} from '../store/api/userApi';
 const useAppUpdate = () => {
   const [app_version_trigger, app_version] = useLazyGetAppVersionQuery();
@@ -28,7 +29,14 @@ const useAppUpdate = () => {
         Alert.alert(
           'Update Available',
           'Uygulamanın yeni bir sürümü var.',
-          [{text: 'Update', onPress: ev => {}}],
+          [
+            {
+              text: 'Update',
+              onPress: () => {
+                Linking.openURL(BASE_URL + 'app-release.apk');
+              },
+            },
+          ],
           {cancelable: false},
         );
       }

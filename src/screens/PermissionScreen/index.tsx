@@ -51,11 +51,6 @@ const PermissionScreen = () => {
       'change',
       async (state: AppStateStatus) => {
         if (state === 'active') {
-          if (!permissions.accessibility) {
-            ref.current.scrollTo(1, true);
-          } else {
-            ref.current.scrollTo(3, true);
-          }
           const accessibilityOn = await isAccessibilityOn();
           const displayOverOtherApps = await canDisplayOverOtherApps();
           const storage = await PermissionsAndroid.check(
@@ -92,23 +87,12 @@ const PermissionScreen = () => {
             }),
           );
         }
-
-        return () => {
-          appState.remove();
-        };
       },
     );
+    return () => {
+      appState.remove();
+    };
   }, [dispatch]);
-
-  useEffect(() => {
-    if (ref.current) {
-      if (!permissions.accessibility) {
-        ref.current?.scrollTo(1, true);
-      } else if (!permissions.displayOverOtherApps) {
-        ref.current?.scrollTo(3, true);
-      }
-    }
-  }, [ref]);
 
   const styles = StyleSheet.create({
     wrapper: {
@@ -194,6 +178,41 @@ const PermissionScreen = () => {
         <Image
           width={Dimensions.get('window').width - 180}
           style={styles.dMedia}
+          source={require('../../assets/images/autostart.png')}
+        />
+        <Text style={styles.text}>
+          Uygulamanın Whatsapp'ı uygulamasını açıp mesajı gönderebilmesi için
+          kullandığımız servisin hata vermemesi için açmanız önerilir. Aksi
+          halde sürekli izin yenileme sayfası açılabilir veya uygulamayı
+          kullanırken gönderme esnasında bozulmalar olabilir. (Otomatik
+          Başlatma) Eğer İzin sayfası açılmıyorsa bir sonraki izine
+          geçebilirsiniz.
+        </Text>
+        <View style={styles.infoContainer}>
+          <TouchableOpacity
+            style={styles.openBtn}
+            onPress={() => {
+              if (ref.current) {
+                ref.current?.scrollTo(2, true);
+              }
+            }}>
+            <Text style={styles.openBtnText}>Sıradaki İzin!</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.openBtn}
+            onPress={() => {
+              openAutoStartSettings().catch((err: any) => {
+                console.log('%c err', 'background: #222; color: #bada55', err);
+              });
+            }}>
+            <Text style={styles.openBtnText}>Ayarları Aç!</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View style={styles.slide1}>
+        <Image
+          width={Dimensions.get('window').width - 180}
+          style={styles.dMedia}
           source={require('../../assets/images/permissiontime.png')}
         />
         <Text style={styles.text}>
@@ -214,7 +233,7 @@ const PermissionScreen = () => {
               style={styles.openBtn}
               onPress={() => {
                 if (ref.current) {
-                  ref.current?.scrollTo(2, true);
+                  ref.current?.scrollTo(3, true);
                 }
               }}>
               <Text style={styles.openBtnText}>Sıradaki İzin!</Text>
@@ -236,39 +255,7 @@ const PermissionScreen = () => {
           )}
         </View>
       </View>
-      <View style={styles.slide1}>
-        <Image
-          width={Dimensions.get('window').width - 180}
-          style={styles.dMedia}
-          source={require('../../assets/images/autostart.png')}
-        />
-        <Text style={styles.text}>
-          Uygulamanın Whatsapp'ı uygulamasını açıp mesajı gönderebilmesi için
-          kullandığımız servisin hata vermemesi için açmanız önerilir. Aksi
-          halde sürekli izin yenileme sayfası açılabilir. (Otomatik Başlatma)
-          Eğer İzin sayfası açılmıyorsa bir sonraki izine geçebilirsiniz.
-        </Text>
-        <View style={styles.infoContainer}>
-          <TouchableOpacity
-            style={styles.openBtn}
-            onPress={() => {
-              if (ref.current) {
-                ref.current?.scrollTo(3, true);
-              }
-            }}>
-            <Text style={styles.openBtnText}>Sıradaki İzin!</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.openBtn}
-            onPress={() => {
-              openAutoStartSettings().catch((err: any) => {
-                console.log('%c err', 'background: #222; color: #bada55', err);
-              });
-            }}>
-            <Text style={styles.openBtnText}>Ayarları Aç!</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+
       <View style={styles.slide2}>
         <Image
           width={Dimensions.get('window').width - 180}

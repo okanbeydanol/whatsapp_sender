@@ -20,7 +20,10 @@ import {
 } from '../../constants/styles/colors';
 import AppTextInput from '../../components/Elements/AppTextInput';
 import {Icon, CheckBox, Image} from '@rneui/themed';
-import {useLazyUpdateUserMessageTemplatesQuery} from '../../store/api/userApi';
+import {
+  useLazyDeleteUserMessageTemplatesQuery,
+  useLazyUpdateUserMessageTemplatesQuery,
+} from '../../store/api/userApi';
 import ActionSheet from 'react-native-actions-sheet';
 import {
   ImagePickerResponse,
@@ -33,7 +36,10 @@ import {batch, useDispatch, useSelector} from 'react-redux';
 import {getLoginStore} from '../../store/slices/login';
 import {BASE_API_URL} from '../../constants';
 import {ImageArrayToUpload, uploadImage} from '../../utils/upload-image';
-import {USER_MESSAGES_TEMPLATE_REPLACE} from '../../store/slices/user';
+import {
+  USER_MESSAGES_TEMPLATE_DELETE,
+  USER_MESSAGES_TEMPLATE_REPLACE,
+} from '../../store/slices/user';
 import {
   USER_MESSAGE_TEPMLATES,
   USER_MESSAGE_TEPMLATE_IMAGES,
@@ -71,6 +77,8 @@ const EditTemplate = ({
   //Queries
   const [triggerUpdateUserTemplate, update_user_template] =
     useLazyUpdateUserMessageTemplatesQuery();
+  const [triggerDeleteUserTemplate, delete_user_template] =
+    useLazyDeleteUserMessageTemplatesQuery();
 
   //Refs
   let ref: any = useRef();
@@ -119,6 +127,20 @@ const EditTemplate = ({
       }
     }
   }, [update_user_template.data, update_user_template.isSuccess]);
+
+  //delete_user_template isSuccess
+  useEffect(() => {
+    if (
+      typeof delete_user_template.data !== 'undefined' &&
+      delete_user_template.isSuccess &&
+      !delete_user_template.isFetching
+    ) {
+      batch(() => {
+        navigation.pop();
+        dispatch(USER_MESSAGES_TEMPLATE_DELETE(delete_user_template.data));
+      });
+    }
+  }, [delete_user_template.isFetching, delete_user_template.isSuccess]);
 
   //Functions
   //Close Page
@@ -286,6 +308,24 @@ const EditTemplate = ({
     });
   };
 
+  //Deletes Template
+  const deleteTemplate = () => {
+    Alert.alert('Sil!', 'Şablonu silmek istediğinize emin misiniz?', [
+      {
+        text: 'Evet',
+        onPress: () => {
+          triggerDeleteUserTemplate({
+            user_guid: loginStore.userGuid,
+            message_template_guid: template.message_template_guid,
+          });
+        },
+      },
+      {
+        text: 'Hayır',
+        onPress: () => {},
+      },
+    ]);
+  };
   return (
     <>
       <TemplateActionSheet
@@ -297,6 +337,14 @@ const EditTemplate = ({
         <TouchableOpacity onPress={closePress}>
           <Icon
             name="close"
+            size={22}
+            color={medium.color}
+            style={styles.iconStyle}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={deleteTemplate}>
+          <Icon
+            name="delete"
             size={22}
             color={medium.color}
             style={styles.iconStyle}
@@ -452,7 +500,8 @@ const EditTemplate = ({
                   )}
                 </React.Fragment>
               ))}
-              {images.length < (Dimensions.get('window').width / 98) * 2 && (
+              {/* (Dimensions.get('window').width / 98) * 2 */}
+              {images.length < 1 && (
                 <TouchableOpacity
                   style={{
                     width: 80,
@@ -506,6 +555,7 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingRight: 15,
     paddingLeft: 15,
+    paddingBottom: 16,
   },
   tabsContainerStyle: {
     paddingBottom: 16,
@@ -632,6 +682,7 @@ const styles = StyleSheet.create({
   },
   iconStyle: {
     marginLeft: 16,
+    marginRight: 16,
   },
   addIconStyle: {
     marginRight: 16,
@@ -639,8 +690,9 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: primary.color,
     height: 60,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   appHeader: {
     height: 0,

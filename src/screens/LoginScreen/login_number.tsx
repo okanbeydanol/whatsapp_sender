@@ -3,7 +3,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Alert, Dimensions, StyleSheet, Text, View} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import {batch, useDispatch, useSelector} from 'react-redux';
 import {medium, primary, tertiary} from '../../constants/styles/colors';
 import AppHeader from '../../components/Header/AppHeader';
 import AppMaskTextInput from '../../components/Elements/AppMaskTextInput';
@@ -41,6 +41,7 @@ const LoginScreen = ({navigation}: any) => {
   //States
   const [digit, setDigit] = useState('2342423444');
   const [loading, setLoading] = useState(true);
+  const [loadingButton, setLoadingButton] = useState(true);
 
   //Selectors
   const countryStore = useSelector(getCountryStore);
@@ -141,24 +142,27 @@ const LoginScreen = ({navigation}: any) => {
                             geocoderResult.addresses[0].address.streetNumber,
                         });
                         storeData('[geocoderApiResult]', geocoderResult);
-                        dispatch(
-                          COUNTRY_CHANGE({
-                            value: country.value,
-                            label: country.label,
-                            country_name: country.country_name,
-                            latitude:
-                              geocoderResult.addresses[0].position.split(
-                                ',',
-                              )[0],
-                            longitude:
-                              geocoderResult.addresses[0].position.split(
-                                ',',
-                              )[1],
-                            city_name:
-                              geocoderResult.addresses[0].address
-                                .countrySubdivisionName,
-                          }),
-                        );
+                        batch(() => {
+                          setLoadingButton(false);
+                          dispatch(
+                            COUNTRY_CHANGE({
+                              value: country.value,
+                              label: country.label,
+                              country_name: country.country_name,
+                              latitude:
+                                geocoderResult.addresses[0].position.split(
+                                  ',',
+                                )[0],
+                              longitude:
+                                geocoderResult.addresses[0].position.split(
+                                  ',',
+                                )[1],
+                              city_name:
+                                geocoderResult.addresses[0].address
+                                  .countrySubdivisionName,
+                            }),
+                          );
+                        });
                       }
                     }
                   },
@@ -178,17 +182,20 @@ const LoginScreen = ({navigation}: any) => {
                     result.addresses[0].address.countryCode.toLocaleLowerCase(),
                 );
                 if (country) {
-                  dispatch(
-                    COUNTRY_CHANGE({
-                      value: country.value,
-                      label: country.label,
-                      country_name: country.country_name,
-                      latitude: result.addresses[0].position.split(',')[0],
-                      longitude: result.addresses[0].position.split(',')[1],
-                      city_name:
-                        result.addresses[0].address.countrySubdivisionName,
-                    }),
-                  );
+                  batch(() => {
+                    setLoadingButton(false);
+                    dispatch(
+                      COUNTRY_CHANGE({
+                        value: country.value,
+                        label: country.label,
+                        country_name: country.country_name,
+                        latitude: result.addresses[0].position.split(',')[0],
+                        longitude: result.addresses[0].position.split(',')[1],
+                        city_name:
+                          result.addresses[0].address.countrySubdivisionName,
+                      }),
+                    );
+                  });
                 }
               }
             },
@@ -203,6 +210,7 @@ const LoginScreen = ({navigation}: any) => {
   //Fetch phone number Error
   useEffect(() => {
     if (isError) {
+      console.log('%c error', 'background: #222; color: #bada55', error);
       Alert.alert(
         'Hata!',
         'Telefon kontrol edilirken bir hata ile karşılaşıldı!',
@@ -263,7 +271,7 @@ const LoginScreen = ({navigation}: any) => {
         </View>
         <View style={styles.inputContainer}>
           <AppButton
-            isLoading={loading ? loading : isLoading}
+            isLoading={loading ? loading : loadingButton}
             onPress={save}
             title={t('login:buttonText')}
           />

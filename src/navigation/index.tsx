@@ -32,7 +32,9 @@ import EditTemplate from '../screens/TemplatesScreen/EditTemplate';
 import MainScreen from '../screens/MainScreen';
 
 // SettingsScreen Screens
+import SettingsScreen from '../screens/SettingsScreen';
 import TemplatesScreen from '../screens/TemplatesScreen';
+import ContactsScreen from '../screens/ContactsScreen';
 
 // PermissionScreen Screens
 import PermissionScreen from '../screens/PermissionScreen';
@@ -50,8 +52,8 @@ import {getData, storeData} from '../utils/async-storage';
 import Sidebar from '../components/Sidebar';
 import Lists from '../assets/images/tabs/lists.svg';
 import ListsActive from '../assets/images/tabs/lists-active.svg';
-import Templates from '../assets/images/tabs/templates.svg';
-import TemplatesActive from '../assets/images/tabs/templates-active.svg';
+import Settings from '../assets/images/tabs/settings.svg';
+import SettingsActive from '../assets/images/tabs/settings-active.svg';
 import Timers from '../assets/images/tabs/timers.svg';
 import TimersActive from '../assets/images/tabs/timers-active.svg';
 import {PermissionsAndroid, View} from 'react-native';
@@ -106,22 +108,19 @@ export default function Navigation() {
       const userGuid = await getUserGuid();
       const fingerprint = await getFingerprint();
       const androidId = await getAndroidId();
-      const uniqueId = await getUniqueId();
 
       //Update OneSignal Device Data
       OneSignal.sendTags({
-        uniqueId: uniqueId,
+        uniqueId: androidId,
         fingerprint: fingerprint,
-        androidId: androidId,
       });
 
       //Update Device Data Store
       const deviceInfo = await getData('[deviceInfo]');
       if (deviceInfo === null) {
         storeData('[deviceInfo]', {
-          uniqueId: uniqueId,
+          uniqueId: androidId,
           fingerprint: fingerprint,
-          androidId: androidId,
         });
       }
 
@@ -141,15 +140,6 @@ export default function Navigation() {
         PermissionsAndroid.PERMISSIONS.CAMERA,
       );
       const notification = await (await checkNotifications()).status;
-      console.log('%c kjhasdjfhsad', 'background: #222; color: #bada55', {
-        accessibility: accessibility,
-        displayOverOtherApps: displayOverOtherApps,
-        location: location,
-        contacts: contacts,
-        camera: camera,
-        storage: storage,
-        notification: notification === 'granted' ? true : false,
-      });
       //Store Permissions
       storeData('[permissions]', {
         accessibility: accessibility,
@@ -165,9 +155,8 @@ export default function Navigation() {
       batch(async () => {
         dispatch(
           DEVICEINFO_CHANGE({
-            uniqueId: uniqueId,
+            uniqueId: androidId,
             fingerprint: fingerprint,
-            androidId: androidId,
           }),
         );
         if (userGuid === null) {
@@ -300,7 +289,6 @@ const RootNavigator = () => {
               name="StartWhatsappSender"
               component={StartWhatsappSender}
             />
-
             <Stack.Screen
               options={{animation: 'slide_from_right'}}
               name="EditList"
@@ -320,6 +308,16 @@ const RootNavigator = () => {
               options={{animation: 'slide_from_right'}}
               name="ChooseContact"
               component={ChooseContact}
+            />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="TemplatesScreen"
+              component={TemplatesScreen}
+            />
+            <Stack.Screen
+              options={{animation: 'slide_from_right'}}
+              name="ContactsScreen"
+              component={ContactsScreen}
             />
           </Stack.Group>
         ) : (
@@ -391,14 +389,14 @@ const TabNavigator = () => {
                 <Timers />
               </View>
             );
-          } else if (route.name === 'Templates') {
+          } else if (route.name === 'Settings') {
             iconName = focused ? (
               <View style={{width: 32}}>
-                <TemplatesActive />
+                <SettingsActive />
               </View>
             ) : (
               <View style={{width: 32}}>
-                <Templates />
+                <Settings />
               </View>
             );
           }
@@ -417,7 +415,8 @@ const TabNavigator = () => {
           }
         }
       /> */}
-      <Tab.Screen name="Templates" component={TemplatesStackNavigator} />
+
+      <Tab.Screen name="Settings" component={SettingsStackNavigator} />
     </Tab.Navigator>
   );
 };
@@ -442,13 +441,10 @@ function SingleStackNavigator() {
   );
 }
 
-function TemplatesStackNavigator() {
+function SettingsStackNavigator() {
   return (
     <SettingsStack.Navigator screenOptions={{headerShown: false}}>
-      <SettingsStack.Screen
-        name="TemplatesScreen"
-        component={TemplatesScreen}
-      />
+      <SettingsStack.Screen name="SettingsScreen" component={SettingsScreen} />
     </SettingsStack.Navigator>
   );
 }
