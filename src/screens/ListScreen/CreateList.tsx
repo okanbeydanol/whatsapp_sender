@@ -133,7 +133,7 @@ const CreateList = ({
           />
         </TouchableOpacity>
       </View>
-      <ScrollView style={[styles.scrollView]}>
+      <ScrollView nestedScrollEnabled={true} style={[styles.scrollView]}>
         <View style={styles.listPageTitleWrapper}>
           <Text style={styles.listPageTitle}>Gönderilecek Liste Oluştur.</Text>
         </View>

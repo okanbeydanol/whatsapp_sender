@@ -13,15 +13,12 @@ import {medium, primary, tertiary} from '../../constants/styles/colors';
 import {batch, useSelector} from 'react-redux';
 
 import {ContactTabScreenProps} from '../../navigation/types';
-import {KeyboardAwareFlatList} from 'react-native-keyboard-aware-scroll-view';
 import {getDBContactsStore} from '../../store/slices/dbContacts';
-import {
-  DatabaseContactPhonesResponse,
-  DatabaseContactResponse,
-} from '../../utils/native-contact';
+import {DatabaseContactResponse} from '../../utils/native-contact';
 import LoginChatInput from '../../components/login/LoginChatInput';
 import ContactActionSheet from '../../components/ContactScreen/contactActionSheet';
 import ActionSheet from 'react-native-actions-sheet';
+import ContactsRenderer from './ContactsRenderer';
 const ContactsScreen = ({
   navigation,
 }: ContactTabScreenProps<'ChooseContact'>) => {
@@ -39,10 +36,7 @@ const ContactsScreen = ({
     useState<DatabaseContactResponse>();
 
   const [firstLetters, setFirstLetters] = useState<
-    {
-      contact_id: string;
-      firstLetter: string;
-    }[]
+    {contact_id: string; firstLetter: string}[]
   >([]);
 
   useEffect(() => {
@@ -95,96 +89,10 @@ const ContactsScreen = ({
   const closePress = () => {
     navigation.pop();
   };
-  //FlatList Render Item
-  const renderItem = ({item}: {item: DatabaseContactResponse}) => (
-    <>
-      <View style={{display: 'flex', flexDirection: 'row'}}>
-        {firstLetters.findIndex(
-          (o: {contact_id: string; firstLetter: string}) =>
-            +o.contact_id === +item.contact_id,
-        ) !== -1 ? (
-          <View
-            style={{
-              marginTop: 2,
-              width: 36,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            }}>
-            <Text>{item.full_name.substring(0, 1).toUpperCase()}</Text>
-          </View>
-        ) : (
-          <View style={{marginRight: 36}}></View>
-        )}
-        <TouchableOpacity
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            height: 40,
-            width: '100%',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-          onPress={() => {
-            contactPress(item);
-          }}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Icon name="people" style={{marginRight: 12}} />
-            <Text>
-              {Dimensions.get('window').width - 338 < item.full_name.length
-                ? item.full_name.substring(
-                    0,
-                    Dimensions.get('window').width - 338,
-                  ) + '...'
-                : item.full_name}
-            </Text>
-          </View>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 60,
-            }}>
-            <Icon
-              name="cellphone-check"
-              size={22}
-              type="material-community"
-              color={medium.color}
-            />
-            <Text>
-              {
-                item.contact_phones.filter(
-                  (o: DatabaseContactPhonesResponse) => +o.active === 1,
-                ).length
-              }
-            </Text>
-            <Icon
-              name="cellphone-remove"
-              size={22}
-              type="material-community"
-              color={medium.color}
-            />
-            <Text>
-              {
-                item.contact_phones.filter(
-                  (o: DatabaseContactPhonesResponse) => +o.active === 0,
-                ).length
-              }
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    </>
-  );
+  const isRefreshing = (item: DatabaseContactResponse) => {
+    console.log('%c item', 'background: #222; color: #bada55', item);
+  };
+
   return (
     <>
       <ContactActionSheet
@@ -226,7 +134,7 @@ const ContactsScreen = ({
           styleSearchImage={{top: 2}}
         />
       </View>
-      <KeyboardAwareFlatList
+      {/* <KeyboardAwareFlatList
         keyboardOpeningTime={0}
         extraScrollHeight={0}
         extraHeight={0}
@@ -239,6 +147,16 @@ const ContactsScreen = ({
         data={stateContacts}
         renderItem={renderItem}
         keyExtractor={(item: any) => item.id}
+         removeClippedSubviews={true} // Unmount components when outside of window
+        initialNumToRender={2} // Reduce initial render amount
+        maxToRenderPerBatch={1} // Reduce number in each render batch
+        updateCellsBatchingPeriod={100} // Increase time between renders
+        windowSize={7} // Reduce the window size
+      /> */}
+      <ContactsRenderer
+        dataAll={stateContacts}
+        contactPress={contactPress}
+        isRefreshing={(item: DatabaseContactResponse) => isRefreshing(item)}
       />
     </>
   );

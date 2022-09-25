@@ -17,6 +17,7 @@ import {batch, useDispatch, useSelector} from 'react-redux';
 import LoginScreenNumber from '../screens/LoginScreen/login_number';
 import LoginScreenNumberOtp from '../screens/LoginScreen/login_number_otp';
 import LoginScreenNumberInfo from '../screens/LoginScreen/login_number_info';
+import LoginScreenNumberSignature from '../screens/LoginScreen/login_number_signature';
 
 // ContactScreen Screens
 import ListScreen from '../screens/ListScreen/index';
@@ -342,6 +343,10 @@ const RootNavigator = () => {
             name="LoginScreenNumberInfo"
             component={LoginScreenNumberInfo}
           />
+          <Stack.Screen
+            name="LoginScreenNumberSignature"
+            component={LoginScreenNumberSignature}
+          />
         </Stack.Group>
       ) : (
         <Stack.Screen name="Loading" component={LoadingStackNavigator} />
@@ -467,7 +472,7 @@ const DrawerNavigator = () => {
     <Drawer.Navigator
       screenOptions={{
         headerShown: false,
-        drawerType: 'slide',
+        drawerType: 'front',
         drawerPosition: 'left',
       }}
       drawerContent={() => (

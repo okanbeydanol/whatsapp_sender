@@ -29,6 +29,13 @@ export const loginApi = createApi({
         body: patch,
       }),
     }),
+    updateUserSignature: build.query<any, any>({
+      query: ({...patch}) => ({
+        url: 'update_user_signature',
+        method: 'POST',
+        body: patch,
+      }),
+    }),
   }),
 });
 
@@ -37,4 +44,5 @@ export const {
   useLazyCheckPhoneQuery,
   useLazyLoginOrCreateQuery,
   useLazyUpdateUserNameQuery,
+  useLazyUpdateUserSignatureQuery,
 } = loginApi;

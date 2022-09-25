@@ -333,12 +333,12 @@ const styles = StyleSheet.create({
   },
   tabIndicator: {
     backgroundColor: primary.color,
-    height: 2,
+    height: 0,
     padding: 0,
     margin: 0,
   },
   tabContainerStyle: {
-    height: 30,
+    height: 34,
     width: Dimensions.get('window').width - 60,
     marginLeft: 15,
     padding: 0,

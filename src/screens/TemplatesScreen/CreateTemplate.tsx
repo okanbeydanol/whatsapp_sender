@@ -467,7 +467,11 @@ const CreateTemplate = ({
           </>
         )}
         <View style={{width: '100%', paddingStart: 16, marginTop: 16}}>
-          <AppButton onPress={saveTemplate} title="Save" />
+          <AppButton
+            isLoading={create_user_template.isLoading}
+            onPress={saveTemplate}
+            title="Save"
+          />
         </View>
       </KeyboardAwareScrollView>
     </>

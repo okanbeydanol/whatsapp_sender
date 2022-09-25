@@ -12,11 +12,27 @@ const useAppUpdate = () => {
     if (
       typeof app_version.data === 'undefined' &&
       !app_version.isSuccess &&
-      !app_version.isFetching
+      !app_version.isFetching &&
+      !app_version.isError
     ) {
       app_version_trigger({});
     }
   };
+
+  //Get user error
+  useEffect(() => {
+    if (app_version.isError && app_version.error) {
+      console.log(
+        '%c  error2',
+        'background: #222; color: #bada55',
+        app_version.error,
+      );
+      Alert.alert('Hata Var', 'APP VERSION çekilemiyor!', [
+        {text: 'OK', onPress: () => {}},
+      ]);
+    }
+  }, [app_version.isError]);
+
   useEffect(() => {
     if (
       typeof app_version.data !== 'undefined' &&

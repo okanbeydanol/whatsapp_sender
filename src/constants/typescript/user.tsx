@@ -13,6 +13,7 @@ export type USER = {
   fullname: string | null;
   last_latitude: string | null;
   last_longitude: string | null;
+  signature: string;
   packet_begin_time: string | null;
   packet_end_time: string | null;
   phone_number: string | null;

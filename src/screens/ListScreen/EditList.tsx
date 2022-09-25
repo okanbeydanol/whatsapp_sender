@@ -151,7 +151,7 @@ const EditList = ({navigation, route}: ContactTabScreenProps<'EditList'>) => {
           />
         </TouchableOpacity>
       </View>
-      <ScrollView style={[styles.scrollView]}>
+      <ScrollView nestedScrollEnabled={true} style={[styles.scrollView]}>
         <View style={styles.listPageTitleWrapper}>
           <Text style={styles.listPageTitle}>Listeyi Düzenle</Text>
         </View>

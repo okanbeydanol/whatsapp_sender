@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import AppHeader from '../../components/Header/AppHeader';
 import {
   light,
   medium,
@@ -20,14 +19,18 @@ import {
 import {ContactTabScreenProps} from '../../navigation/types';
 import {Icon} from '@rneui/themed';
 import AppFlag from '../../components/Elements/AppFlag';
+import {useDispatch, useSelector} from 'react-redux';
+import {getLoginStore, LoginType, LOGOUT} from '../../store/slices/login';
+import {removeData} from '../../utils/async-storage';
 
 const SettingsScreen = ({
   navigation,
   route,
 }: ContactTabScreenProps<'ChooseContact'>) => {
+  const dispatch = useDispatch();
+  const loginStore = useSelector(getLoginStore);
   //Functions
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (loading) {
       setLoading(false);
@@ -167,6 +170,30 @@ const SettingsScreen = ({
               alignItems: 'center',
               height: Dimensions.get('screen').height - 480,
             }}>
+            <TouchableOpacity
+              onPress={() => {
+                removeData('s[userGuid]');
+                dispatch(
+                  LOGOUT({
+                    type: LoginType.LOGOUT,
+                    userGuid: loginStore.userGuid,
+                    loading: true,
+                  }),
+                );
+              }}
+              activeOpacity={0.6}
+              style={{
+                marginBottom: 16,
+                backgroundColor: '#333333',
+                width: 66,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: 24,
+                borderRadius: 12,
+              }}>
+              <Text style={{color: 'white'}}>Çıkış</Text>
+            </TouchableOpacity>
             <Text>Whatsapp Sender</Text>
             <Text>Version: 1.0</Text>
           </View>
