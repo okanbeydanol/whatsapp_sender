@@ -6,9 +6,16 @@ name: CI
 on:
   workflow_call:
     inputs:
-        build_number: "13390"
-        version: "1.6"
-        server: "prod"
+      build_number:
+        description: 'Build Number'
+        default: '13390'
+        required: true
+        type: string
+      version:
+        description: 'Version'
+        default: '1.6'
+        required: true
+        type: string
 
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
