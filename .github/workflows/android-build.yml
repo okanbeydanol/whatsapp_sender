@@ -6,10 +6,9 @@ name: CI
 on:
   workflow_call:
     inputs:
-      username:
-        build_number: 13390
-        version: 1.6
-        server: prod
+        build_number: "13390"
+        version: "1.6"
+        server: "prod"
 
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
@@ -38,7 +37,7 @@ jobs:
           git config --global url."https://github.com/".insteadOf
           ssh://git@github.com/
       - name: Envinfo
-        run: echo $param1
+        run: echo ${{ inputs.build_number }}
       - name: Install React Native
         run: npm uninstall -g react-native-cli @react-native-community/cli
       - name: Removing node_modules
