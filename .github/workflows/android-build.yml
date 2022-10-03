@@ -8,12 +8,10 @@ on:
     inputs:
       build_number:
         description: 'Build Number'
-        default: '13390'
         required: true
         type: string
       version:
         description: 'Version'
-        default: '1.6'
         required: true
         type: string
 
@@ -44,7 +42,7 @@ jobs:
           git config --global url."https://github.com/".insteadOf
           ssh://git@github.com/
       - name: Envinfo
-        run: echo ${{ inputs.build_number }}
+        run: echo The username is ${{ inputs.build_number }}
       - name: Install React Native
         run: npm uninstall -g react-native-cli @react-native-community/cli
       - name: Removing node_modules
