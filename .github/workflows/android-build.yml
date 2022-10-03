@@ -7,13 +7,18 @@ on:
   workflow_call:
     inputs:
       build_number:
-        description: 'Build Number'
+        description: "merhaava11111"
         required: true
+        default: "merhabaaaaa"
         type: string
       version:
-        description: 'Version'
+        description: "merhaava11111"
         required: true
+        default: "merhabaaaaa"
         type: string
+    secrets:
+      token:
+        required: true
 
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
@@ -43,6 +48,8 @@ jobs:
           ssh://git@github.com/
       - name: Envinfo
         run: echo The username is ${{ inputs.build_number }}
+      - name: Envinfo2
+        run: echo The username is ${{ secrets.token }}
       - name: Install React Native
         run: npm uninstall -g react-native-cli @react-native-community/cli
       - name: Removing node_modules
