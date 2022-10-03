@@ -4,6 +4,13 @@ name: CI
 
 # Controls when the workflow will run
 on:
+  workflow_call:
+    inputs:
+      username:
+        build_number: 13390
+        version: 1.6
+        server: prod
+
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
     branches: [ "master" ]
